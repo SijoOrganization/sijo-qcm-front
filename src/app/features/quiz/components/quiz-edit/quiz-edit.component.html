@@ -1,0 +1,103 @@
+<div class="container mt-3">
+  <!-- Header Section -->
+  @if (isEditing) {
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="m-0">Edit Quiz</h3>
+      <div>
+        <button class="btn btn-primary" (click)="reset()">Reset</button>
+      </div>
+    </div>
+  } @else {
+    <h3>Create new quiz</h3>
+  }
+
+  @if (!!quiz()) {
+    <!-- Nav Tabs -->
+    <ul
+      ngbNav
+      #nav="ngbNav"
+      class="nav nav-tabs"
+      [(activeId)]="active"
+      (navChange)="onTabChange($event)"
+    >
+      <li [ngbNavItem]="1">
+        <a ngbNavLink>Form Input</a>
+        <ng-template ngbNavContent>
+          <!-- Form to input quiz details -->
+          <app-quiz-form
+            [(quiz)]="quiz"
+            [isEditing]="isEditing"
+          ></app-quiz-form>
+          <!-- Footer Buttons -->
+          <div class="d-flex justify-content-end mt-4">
+            @if (isEditing) {
+              <button class="btn btn-outline-danger me-2" (click)="delete()">
+                Delete Quiz
+              </button>
+              <button class="btn btn-success" (click)="save()">Save</button>
+            } @else {
+              <button class="btn btn-success" (click)="create()">
+                Create quiz
+              </button>
+            }
+          </div>
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="2">
+        <a ngbNavLink>JSON Editor</a>
+        <ng-template ngbNavContent>
+          <div class="editor-container">
+            <ngx-monaco-editor
+              class="json-editor"
+              [(ngModel)]="jsonQuiz"
+              [options]="editorOptions"
+              aria-label="JSON Quiz Editor"
+            ></ngx-monaco-editor>
+          </div>
+          <button class="mt-3 btn btn-primary" (click)="checkJson()">
+            Check JSON
+          </button>
+        </ng-template>
+      </li>
+      @if (!isEditing) {
+        <li [ngbNavItem]="3">
+          <a ngbNavLink>AI generator</a>
+
+          <ng-template ngbNavContent>
+            <form (ngSubmit)="generateQuiz(topics.value, nbQuestions.value)">
+              <div class="form-group">
+                <label for="topics">This quiz is about...</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="topics"
+                  aria-describedby="topics"
+                  placeholder="Quiz topics"
+                  value="Java,Python"
+                  #topics
+                />
+              </div>
+              <div class="form-group">
+                <label for="nbQuestions">Number of questions</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="nbQuestions"
+                  placeholder="nbQuestions"
+                  value="5"
+                  #nbQuestions
+                />
+              </div>
+              <button type="submit" class="btn btn-primary mt-3">
+                Generate
+              </button>
+            </form>
+          </ng-template>
+        </li>
+      }
+    </ul>
+
+    <!-- Render Tabs -->
+    <div [ngbNavOutlet]="nav" class="mt-3"></div>
+  }
+</div>

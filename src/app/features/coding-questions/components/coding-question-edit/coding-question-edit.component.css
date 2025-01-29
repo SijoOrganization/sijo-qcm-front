@@ -1,0 +1,10 @@
+.editor-container {
+  height: calc(100vh - 300px);
+}
+
+.json-editor {
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+

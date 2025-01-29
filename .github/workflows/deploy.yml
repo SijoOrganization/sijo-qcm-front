@@ -1,0 +1,47 @@
+name: Deploy Angular to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - workflow-deployment
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Use the version compatible with your project
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Test
+      - name: Run tests
+        run: npm run test:cicd
+
+      # Build the Angular project
+      - name: Build the project
+        run: npm run build:prod
+      
+      - name: Add 404.html for routing
+        run: cp dist/index.html dist/404.html
+      
+      # Deploy to a branch named after the triggering branch
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist

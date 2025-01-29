@@ -1,0 +1,15 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+.modalClass .modal-content {
+  border: none;
+  background: none;
+}
+.modalClass .spinner-border {
+  width: 5rem !important;
+  height: 5rem !important;
+  border-width: 0.5rem;
+  border-color: white;
+  border-right-color: transparent;
+}

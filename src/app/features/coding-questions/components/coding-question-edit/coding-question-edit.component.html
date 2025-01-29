@@ -1,0 +1,89 @@
+<div class="container mt-3">
+  <!-- Header Section -->
+  @if (isEditing) {
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="m-0">Edit coding question</h3>
+      <div>
+        <button class="btn btn-primary" (click)="reset()">Reset</button>
+      </div>
+    </div>
+  } @else {
+    <h3>Create new coding question</h3>
+  }
+
+  @if (!!question()) {
+    <!-- Nav Tabs -->
+    <ul
+      ngbNav
+      #nav="ngbNav"
+      class="nav nav-tabs"
+      [(activeId)]="active"
+      (navChange)="onTabChange($event)"
+    >
+      <li [ngbNavItem]="1">
+        <a ngbNavLink>Form Input</a>
+        <ng-template ngbNavContent>
+          <!-- Form to input coding question details -->
+          <app-coding-question-form
+            [(codingQuestion)]="question"
+          ></app-coding-question-form>
+          <!-- Footer Buttons -->
+          <div class="d-flex justify-content-end mt-4">
+            @if (isEditing) {
+              <button class="btn btn-outline-danger me-2" (click)="delete()">
+                Delete codingQuestion
+              </button>
+              <button class="btn btn-success" (click)="save()">Save</button>
+            } @else {
+              <button class="btn btn-success" (click)="create()">Create</button>
+            }
+          </div>
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="2">
+        <a ngbNavLink>JSON Editor</a>
+        <ng-template ngbNavContent>
+          <div class="editor-container">
+            <ngx-monaco-editor
+              class="json-editor"
+              [(ngModel)]="jsonQuestion"
+              [options]="editorOptions"
+              aria-label="JSON question Editor"
+            ></ngx-monaco-editor>
+          </div>
+          <button class="mt-3 btn btn-primary" (click)="checkJson()">
+            Check JSON
+          </button>
+        </ng-template>
+      </li>
+      @if (!isEditing) {
+        <li [ngbNavItem]="3">
+          <a ngbNavLink>AI generator</a>
+
+          <ng-template ngbNavContent>
+            <form (ngSubmit)="generateQuestion(topics.value)">
+              <div class="form-group">
+                <label for="topics">This question is about...</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="topics"
+                  aria-describedby="topics"
+                  placeholder="quesiton topics"
+                  value="Binary tree"
+                  #topics
+                />
+              </div>
+              <button type="submit" class="btn btn-primary mt-3">
+                Generate
+              </button>
+            </form>
+          </ng-template>
+        </li>
+      }
+    </ul>
+
+    <!-- Render Tabs -->
+    <div [ngbNavOutlet]="nav" class="mt-3"></div>
+  }
+</div>

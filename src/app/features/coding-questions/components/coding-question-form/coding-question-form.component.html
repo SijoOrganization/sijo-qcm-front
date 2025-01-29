@@ -1,0 +1,154 @@
+<div>
+  <div class="mb-2">
+    <label class="form-label">Title</label>
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="codingQuestion().title"
+      placeholder="Enter Question Title"
+    />
+  </div>
+  <div class="mb-2">
+    <label class="form-label">Description</label>
+    <textarea
+      class="form-control"
+      rows="3"
+      [(ngModel)]="codingQuestion().description"
+      placeholder="Enter Question Description"
+    ></textarea>
+  </div>
+
+  <!-- Test Cases -->
+  <h4>Test Cases</h4>
+  @for (
+    testCase of codingQuestion().testCases;
+    track $index;
+    let testCaseIdx = $index
+  ) {
+    <div class="border p-3 mb-3">
+      <label>Test Case {{ testCaseIdx + 1 }}</label>
+      <div class="mb-2">
+        <label class="form-label">Input</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="testCase.input"
+          placeholder="Enter Test Case Input"
+        />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Expected Output</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="testCase.expectedOutput"
+          placeholder="Enter Expected Output"
+        />
+      </div>
+      <button
+        class="btn btn-sm btn-outline-danger"
+        (click)="deleteTestCase(testCaseIdx)"
+      >
+        Delete Test Case
+      </button>
+    </div>
+  }
+
+  <button class="btn btn-sm btn-outline-primary" (click)="addTestCase()">
+    Add Test Case
+  </button>
+
+  <!-- Function Signatures -->
+  <h4>Function Signatures</h4>
+  @for (
+    signature of codingQuestion().functionSignatures;
+    track signature.language;
+    let idx = $index
+  ) {
+    <div class="border p-3 mb-3">
+      <label>Function Signature {{ idx + 1 }}</label>
+      <div class="mb-2">
+        <label class="form-label">Language</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="signature.language"
+          placeholder="Enter Language"
+        />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Function Name</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="codingQuestion().functionName"
+          placeholder="Enter Function Name"
+        />
+      </div>
+      <div>
+        <h5>Arguments</h5>
+        @for (
+          argument of signature.arguments;
+          track argument.name;
+          let argIdx = $index
+        ) {
+          <div class="border p-3 mb-2">
+            <div class="mb-2">
+              <label class="form-label">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="argument.name"
+                placeholder="Enter Argument Name"
+              />
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Type</label>
+              <select
+                class="form-select"
+                aria-label="Select argument type"
+                [(ngModel)]="argument.type"
+              >
+                <option selected disabled>Select argument type</option>
+                <option value="int">int</option>
+                <option value="Integer">Integer</option>
+                <option value="String">String</option>
+                <option value="Boolean">Boolean</option>
+                <option value="List<Integer>">List&lt;Integer&gt;</option>
+                <option value="List<String>">List&lt;String&gt;</option>
+              </select>
+            </div>
+            <button
+              class="btn btn-sm btn-outline-danger"
+              (click)="deleteArgument(idx, argIdx)"
+            >
+              Delete Argument
+            </button>
+          </div>
+        }
+        <button
+          class="btn btn-sm btn-outline-primary"
+          (click)="addArgument(idx)"
+        >
+          Add Argument
+        </button>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Return Type</label>
+        <select
+          class="form-select"
+          aria-label="Select argument type"
+          [(ngModel)]="signature.returnType"
+        >
+          <option selected disabled>Select argument type</option>
+          <option value="int">int</option>
+          <option value="Integer">Integer</option>
+          <option value="String">String</option>
+          <option value="Boolean">Boolean</option>
+          <option value="List<Integer>">List&lt;Integer&gt;</option>
+          <option value="List<String>">List&lt;String&gt;</option>
+        </select>
+      </div>
+    </div>
+  }
+</div>

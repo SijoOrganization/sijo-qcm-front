@@ -1,0 +1,7 @@
+@if(!!alertService.alertMessage()){<ngb-alert
+  [type]="alertService.alertMessage()?.type ?? 'info'"
+  (closed)="close()"
+>
+  {{ alertService.alertMessage()?.message }}
+</ngb-alert>
+}

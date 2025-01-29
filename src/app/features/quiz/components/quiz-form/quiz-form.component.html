@@ -1,0 +1,96 @@
+<div>
+  <div class="mb-2">
+    <label class="form-label">Title</label>
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="quiz()!.title"
+      placeholder="Enter Quiz Title"
+    />
+  </div>
+  <div class="mb-2">
+    <label class="form-label">Explanation</label>
+    <textarea
+      class="form-control"
+      rows="3"
+      [(ngModel)]="quiz()!.explanation"
+      placeholder="Enter Explanation"
+    ></textarea>
+  </div>
+  <div class="mb-2">
+    <label class="form-label">Category</label>
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="quiz()!.category"
+      placeholder="Enter Category"
+    />
+  </div>
+</div>
+
+<!-- Questions and Answers -->
+<h4>Questions</h4>
+@for (
+  question of quiz()!.questions;
+  track question.id;
+  let idxQuestion = $index
+) {
+  <div class="border p-3 mb-3">
+    <label>Question {{ idxQuestion + 1 }}</label>
+    <input
+      type="text"
+      class="form-control mb-2"
+      [(ngModel)]="question.text"
+      placeholder="Enter Question Text"
+    />
+    <!-- Answers -->
+    @for (answer of question.answers; track answer.id; let idxAnswer = $index) {
+      <div class="input-group mb-2 align-items-center">
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="answer.option"
+          placeholder="Enter Answer Option"
+        />
+        <div class="form-check ms-3 d-flex">
+          <input
+            type="checkbox"
+            class="form-check-input larger-checkbox"
+            id="correctAnswer{{ idxQuestion }}-{{ idxAnswer }}"
+            [(ngModel)]="answer.isCorrect"
+          />
+          <label
+            class="form-check-label"
+            for="correctAnswer{{ idxQuestion }}-{{ idxAnswer }}"
+          >
+            Is correct?
+          </label>
+        </div>
+        <!-- Delete Answer Button -->
+        <button
+          class="btn btn-sm btn-outline-danger ms-2"
+          (click)="deleteAnswer(idxQuestion, idxAnswer)"
+        >
+          Delete Answer
+        </button>
+      </div>
+    }
+    <!-- Add/Delete Buttons for Answers -->
+    <button
+      class="btn btn-sm btn-outline-primary"
+      (click)="addAnswer(idxQuestion)"
+    >
+      Add Answer
+    </button>
+    <button
+      class="btn btn-sm btn-outline-danger ms-2"
+      (click)="deleteQuestion(idxQuestion)"
+    >
+      Delete Question
+    </button>
+  </div>
+}
+
+<button class="btn btn-sm btn-success" (click)="addQuestion()">
+  Add Question
+</button>

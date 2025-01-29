@@ -1,0 +1,43 @@
+@for (question of quiz().questions; track question.id) {
+<h3>Question {{ $index }}</h3>
+<div class="container mt-4">
+  <div class="card shadow p-3 mb-4">
+    <div class="card-body">
+      <!-- Question Text -->
+      <div
+        class="card-title border rounded p-3"
+        style="white-space: pre-wrap; max-height: 500px; overflow-y: auto"
+      >
+        {{ question.text }}
+      </div>
+      <!-- Answers as Buttons -->
+      <form class="d-flex flex-column gap-3">
+        @for (answer of question.answers; track answer.id) { @let isSelected =
+        selectedResponses()[question.id].has(answer.id);
+        <div class="btn-group">
+          <input
+            class="btn-check"
+            type="checkbox"
+            [checked]="isSelected"
+            id="{{ question.id }}-{{ answer.id }}"
+            (change)="selectAnswer(question.id, answer.id)"
+          />
+          <label
+            class="btn btn-lg text-start btn-outline-primary"
+            for="{{ question.id }}-{{ answer.id }}"
+          >
+            {{ answer.option }}
+          </label>
+        </div>
+        }
+      </form>
+    </div>
+  </div>
+</div>
+
+}
+<div class="d-flex justify-content-center mt-4">
+  <button class="btn btn-danger" (click)="openFinishConfirmationPopup()">
+    Finish test
+  </button>
+</div>

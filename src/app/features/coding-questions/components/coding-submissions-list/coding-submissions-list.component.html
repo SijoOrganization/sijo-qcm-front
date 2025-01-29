@@ -1,0 +1,19 @@
+<div class="list-group">
+  @for (
+    submission of codingSubmissions$ | async;
+    track submission.codingSubmissionId
+  ) {
+    <button
+      type="button"
+      class="list-group-item list-group-item-action"
+      (click)="onSubmissionClick(submission)"
+    >
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">Submission #{{ submission.codingSubmissionId }}</h5>
+        <small>{{ submission.createdAt | date: "short" }}</small>
+      </div>
+      <p class="mb-1">Language: {{ submission.language }}</p>
+      <small> Score: {{ submission.score * 100 }}/100</small>
+    </button>
+  }
+</div>

@@ -1,0 +1,42 @@
+<div
+  class="d-flex justify-content-center align-items-center container flex-column gap-3"
+>
+  <!-- Display List of Available Quizzes -->
+  @if (!!quizzes()) {
+    <h2 class="mb-3">Available Quizzes</h2>
+    <ul class="list-group w-100">
+      @for (quiz of quizzes(); track quiz._id) {
+        <li
+          class="list-group-item d-flex justify-content-between align-items-center p-3"
+        >
+          <div>
+            <h5 class="mb-1">{{ quiz.title }}</h5>
+            <p class="mb-0 text-muted">Category: {{ quiz.category }}</p>
+          </div>
+          <div class="btn-group" role="group">
+            <button
+              class="btn btn-outline-primary btn-sm"
+              [routerLink]="['/quizzes', quiz._id]"
+            >
+              Start
+            </button>
+            @if (hasTutorAcess) {
+              <button
+                class="btn btn-outline-primary btn-sm"
+                [routerLink]="['/quizzes', quiz._id, 'edit']"
+              >
+                Modify
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (hasTutorAcess) {
+    <button class="btn btn-success" [routerLink]="['/quizzes/create']">
+      Add new quiz
+    </button>
+  }
+</div>

@@ -1,0 +1,13 @@
+
+  /* Ensure the label for the checkbox retains its styling */
+  .btn-check:disabled + label {
+    opacity: 1; /* Prevent "greyed-out" appearance */
+  }
+
+  
+  .wrong-icon {
+    color: red; /* Make the cross icon red */
+    margin-left: 10px; /* Add spacing from the label */
+    font-size: 1.5rem; /* Adjust the size of the cross icon */
+    vertical-align: middle; /* Align vertically with the label text */
+  }

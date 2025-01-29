@@ -1,0 +1,61 @@
+<div class="container mt-5">
+  <div class="justify-content-center">
+    <h1 class="text-center mb-5 display-4">{{ title }}</h1>
+    <form
+      #myForm="ngForm"
+      (submit)="onSubmit(myForm)"
+      class="card p-5 shadow-lg"
+    >
+      <div class="mb-4">
+        <label for="login" class="form-label fs-4">Login</label>
+        <input
+          type="text"
+          name="login"
+          class="form-control form-control-lg"
+          id="login"
+          aria-describedby="loginInput"
+          placeholder="Enter your login"
+          required
+          ngModel
+        />
+      </div>
+      <div class="mb-4">
+        <label for="password" class="form-label fs-4">Password</label>
+        <input
+          type="password"
+          name="password"
+          class="form-control form-control-lg"
+          id="password"
+          aria-describedby="passwordInput"
+          placeholder="Enter your password"
+          required
+          ngModel
+        />
+      </div>
+      <div class="d-grid mb-4">
+        <button class="btn btn-primary btn-lg" type="submit">Submit</button>
+      </div>
+      <div class="text-center">
+        @if (authType === "signin") {
+          <a
+            class="btn btn-secondary btn-lg"
+            routerLink="/auth/signup"
+            routerLinkActive="active"
+            aria-current="page"
+          >
+            Signup
+          </a>
+        } @else {
+          <a
+            class="btn btn-link fs-5"
+            routerLink="/auth/signin"
+            routerLinkActive="active"
+            aria-current="page"
+          >
+            Already have an account?
+          </a>
+        }
+      </div>
+    </form>
+  </div>
+</div>

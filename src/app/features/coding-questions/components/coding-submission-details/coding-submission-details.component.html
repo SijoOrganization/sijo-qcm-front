@@ -1,0 +1,50 @@
+@let submission = submissionInput();
+@if (submission) {
+  <div class="container mt-4" style="height: 500px">
+    <!-- Card for Submission Details -->
+    <div class="card">
+      <div class="card-header">
+        <h4>Submission Details</h4>
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">
+          Submission ID: {{ submission.codingSubmissionId }}
+        </h5>
+
+        <div class="mb-3">
+          <strong>Submitted on:</strong>
+          {{ submission.createdAt | date: "medium" }}
+        </div>
+
+        <div class="mb-3">
+          <strong>Score:</strong> {{ submission.score * 100 }}/100
+        </div>
+        <div class="mb-3">
+          <strong>Language:</strong> {{ submission.language }}
+        </div>
+
+        <div class="mb-3">
+          <strong>User Code:</strong>
+          <pre class="bg-light p-3"
+            >{{ submission.userCode }}
+            </pre
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5>Additional Information</h5>
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <strong>Question ID:</strong> {{ submission.questionId }}
+        </li>
+        <li class="list-group-item">
+          <strong>User ID:</strong> {{ submission.userId }}
+        </li>
+      </ul>
+    </div>
+  </div>
+}

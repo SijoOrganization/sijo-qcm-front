@@ -1,0 +1,66 @@
+<div class="d-flex flex-column">
+  <header class="bg-primary text-white py-5 text-center">
+    <div class="container">
+      <h1 class="display-3 fw-bold">Welcome to SijoQuiz</h1>
+      <p class="lead">
+        The ultimate platform for interactive quizzes and learning fun!
+      </p>
+      <div class="d-flex justify-content-evenly">
+        <button class="btn btn-light btn-lg mt-3" [routerLink]="'/quizzes'">
+          See all quizzes
+        </button>
+
+        <button
+          class="btn btn-light btn-lg mt-3"
+          [routerLink]="'/coding-questions'"
+        >
+          See all coding questions
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features Section -->
+  <section id="features" class="py-5 bg-light">
+    <div class="container">
+      <h2 class="text-center mb-4">Why Choose SijoQuiz?</h2>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card h-100 text-center shadow">
+            <div class="card-body">
+              <i class="bi bi-lightning-charge text-primary display-4"></i>
+              <h5 class="card-title mt-3">Engaging Quizzes</h5>
+              <p class="card-text">
+                Challenge yourself with quizzes that are fun, dynamic, and
+                interactive.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 text-center shadow">
+            <div class="card-body">
+              <i class="bi bi-shield-lock text-primary display-4"></i>
+              <h5 class="card-title mt-3">Secure Platform</h5>
+              <p class="card-text">
+                Your data is safe and secure with advanced encryption standards.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 text-center shadow">
+            <div class="card-body">
+              <i class="bi bi-stars text-primary display-4"></i>
+              <h5 class="card-title mt-3">Learn & Earn</h5>
+              <p class="card-text">
+                Unlock achievements and track your progress as you master new
+                topics.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

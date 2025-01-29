@@ -1,0 +1,75 @@
+@let question = codingQuestion();
+@if (question) {
+  <div class="container-fluid h-100 row">
+    <!-- Left Panel: Question Description -->
+    <div class="col-md-6 bg-light overflow-auto">
+      <ul
+        [destroyOnHide]="false"
+        ngbNav
+        #nav="ngbNav"
+        [(activeId)]="active"
+        class="nav-tabs"
+      >
+        <li ngbNavItem="description">
+          <button ngbNavLink>Description</button>
+          <ng-template ngbNavContent>
+            <h2 class="mb-3">{{ question.title }}</h2>
+            <div class="card">
+              <div class="card-body">
+                <p class="mb-0">{{ question.description }}</p>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem="submissions-list">
+          <button ngbNavLink>History</button>
+          <ng-template ngbNavContent>
+            <app-coding-submissions-list
+              [questionId]="question.id!"
+              (submissionSelected)="selectSubmission($event)"
+            ></app-coding-submissions-list>
+          </ng-template>
+        </li>
+        <li ngbNavItem="submission-detail">
+          <button ngbNavLink>Submissions</button>
+          <ng-template ngbNavContent>
+            <app-coding-submission-details
+              [submissionInput]="currentSubmission()!"
+            ></app-coding-submission-details>
+          </ng-template>
+        </li>
+      </ul>
+
+      <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </div>
+
+    <!-- Right Panel: Code Editor -->
+    <div class="col-md-6 d-flex flex-column overflow-auto">
+      <!-- Submit Button -->
+      <div
+        class="bg-dark text-white p-3 d-flex align-items-center justify-content-between"
+      >
+        <h5 class="mb-0">Code Editor</h5>
+        <button class="btn btn-success" (click)="submitSolution()">
+          Submit Solution
+        </button>
+      </div>
+
+      <!-- Monaco Editor -->
+      <div class="overflow-auto h-50">
+        <ngx-monaco-editor
+          [options]="editorOptions"
+          [(ngModel)]="code"
+          class="h-100 w-100"
+        >
+        </ngx-monaco-editor>
+      </div>
+
+      <!-- Input for Test Case & Run Button -->
+      <app-code-run
+        [code]="code"
+        [exampleInput]="createExampleInput()"
+      ></app-code-run>
+    </div>
+  </div>
+}

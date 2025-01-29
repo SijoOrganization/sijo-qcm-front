@@ -1,0 +1,5 @@
+.btn-check:disabled + .btn{
+    pointer-events: none; /* Disable hover and clicks */
+    cursor: default; /* Use default cursor */
+    opacity: 1;
+  }

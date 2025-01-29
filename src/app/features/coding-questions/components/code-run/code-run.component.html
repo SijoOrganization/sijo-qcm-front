@@ -1,0 +1,42 @@
+<div class="container">
+  <div class="bg-light p-3">
+    <h5 class="mb-3">Test Case Input</h5>
+    <div class="form-group">
+      <label for="testCaseInput">Enter Test Case Input:</label>
+      <textarea
+        class="form-control"
+        id="testCaseInput"
+        [placeholder]="exampleInput()"
+        [(ngModel)]="stdin"
+        rows="3"
+      ></textarea>
+    </div>
+    <button class="btn btn-primary mt-3" (click)="executeCode()">
+      Run Code
+    </button>
+  </div>
+
+  <!-- Output Section -->
+  @let output = this.output();
+  @if (output) {
+    <div class="bg-dark text-white p-4 rounded shadow-sm mt-4">
+      @if (hasErrorCompilation()) {
+        <div class="mb-3">
+          <h5 class="text-danger">Compile Errors</h5>
+          <pre class="bg-light text-dark p-3 rounded">{{
+            output.compile_output
+          }}</pre>
+        </div>
+      } @else {
+        <div class="mb-3">
+          <h5 class="text-success">Stdout</h5>
+          <pre class="bg-light text-dark p-3 rounded">{{ output.stdout }}</pre>
+        </div>
+        <div class="mb-3">
+          <h5 class="text-warning">Stderr</h5>
+          <pre class="bg-light text-dark p-3 rounded">{{ output.stderr }}</pre>
+        </div>
+      }
+    </div>
+  }
+</div>
