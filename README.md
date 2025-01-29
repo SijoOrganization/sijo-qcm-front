@@ -1,6 +1,6 @@
 # SijoQcmFront
 This is the front-end of the quiz platform. 
-Backend: https://github.com/joshnah/sijo-qcm-back
+Backend: https://github.com/sijocontact/sijo-qcm-backend
 # Functionalities:
 - Authentication and authorization
 - For consultant: Do quiz and do coding questions
