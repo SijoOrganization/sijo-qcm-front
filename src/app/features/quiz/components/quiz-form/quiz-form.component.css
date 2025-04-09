@@ -11,3 +11,8 @@
     cursor: pointer;
   }
 
+textarea {
+  overflow: hidden;
+  resize: none;
+}
+

@@ -37,12 +37,14 @@
 ) {
   <div class="border p-3 mb-3">
     <label>Question {{ idxQuestion + 1 }}</label>
-    <input
+    <textarea
       type="text"
       class="form-control mb-2"
+      rows="1"
       [(ngModel)]="question.text"
       placeholder="Enter Question Text"
-    />
+      (input)="autoResize($event)"
+    ></textarea>
     <!-- Answers -->
     @for (answer of question.answers; track answer.id; let idxAnswer = $index) {
       <div class="input-group mb-2 align-items-center">
