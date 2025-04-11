@@ -10,9 +10,3 @@
     margin-left: 0.2em;
     cursor: pointer;
   }
-
-textarea {
-  overflow: hidden;
-  resize: none;
-}
-
