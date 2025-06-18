@@ -55,7 +55,7 @@ export class QuizEditComponent implements OnInit {
             message: 'Quiz has been generated',
             type: 'success',
           });
-        }),
+        })
       )
       .subscribe((result) => {
         this.jsonQuiz.set(JSON.stringify(result, null, 2));
@@ -101,7 +101,14 @@ export class QuizEditComponent implements OnInit {
   }
 
   create(): void {
-    this.quizService.createQuiz(this.quiz()!).subscribe(() => {
+    // Create a copy of the quiz and remove the placeholder ID
+    const quizToCreate = { ...this.quiz() };
+    // Remove the placeholder ID so the backend can generate a new one
+    if (quizToCreate._id === '') {
+      delete quizToCreate._id;
+    }
+
+    this.quizService.createQuiz(quizToCreate).subscribe(() => {
       this.router.navigate(['/quizzes']);
       this.quizService.fetchQuizzes();
       this.alertService.setMessage({

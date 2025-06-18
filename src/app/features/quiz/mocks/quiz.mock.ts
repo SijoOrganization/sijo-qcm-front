@@ -2,7 +2,7 @@ import { Quiz } from '../../../shared/models/quiz.model';
 import { Submission } from '../../../shared/models/submission.model';
 
 export const MockQuiz: Quiz = {
-  _id: '%s',
+  _id: '',
   title: 'This is an example',
   explanation: 'Example',
   category: 'Java',
