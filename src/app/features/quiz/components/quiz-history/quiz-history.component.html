@@ -6,7 +6,7 @@
     aria-current="true"
   >
     <span>{{ submission.id }}</span>
-    <span class="badge bg-primary">{{ submission.score }}</span>
+    <span class="badge bg-primary">{{ (submission.score * 100).toFixed(2) }}%</span>
   </a>
   }
 </div>
