@@ -23,10 +23,11 @@
             (change)="selectAnswer(question.id, answer.id)"
           />
           <label
-            class="btn btn-lg text-start btn-outline-primary"
+            class="btn btn-lg text-start btn-outline-primary qcm-option-label"
+            style="white-space: pre-wrap; max-height: 500px; overflow-y: auto"
             for="{{ question.id }}-{{ answer.id }}"
           >
-            {{ answer.option }}
+            <pre>{{ answer.option }}</pre>
           </label>
         </div>
         }

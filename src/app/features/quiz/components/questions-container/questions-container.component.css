@@ -1,5 +1,4 @@
-
-  /* Ensure the label for the checkbox retains its styling */
+/* Ensure the label for the checkbox retains its styling */
   .btn-check:disabled + label {
     opacity: 1; /* Prevent "greyed-out" appearance */
   }
@@ -11,3 +10,7 @@
     font-size: 1.5rem; /* Adjust the size of the cross icon */
     vertical-align: middle; /* Align vertically with the label text */
   }
+
+.qcm-option-label {
+  white-space: pre-line;
+}

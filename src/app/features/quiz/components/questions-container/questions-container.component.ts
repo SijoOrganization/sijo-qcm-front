@@ -64,4 +64,8 @@ export class QuestionsContainerComponent implements OnInit {
         this.router.navigate([`/submissions/${confirmation.submissionId}`]);
       });
   }
+
+  formatOption(option: string): string {
+    return option ? option.replace(/\n/g, '<br>') : '';
+  }
 }
