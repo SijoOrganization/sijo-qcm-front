@@ -2,7 +2,7 @@
   @if (submission && quiz) {
     <h2>Result</h2>
     <h3>{{ quiz.title }}</h3>
-    <h3>Score: {{ getScore() }} ({{ getDetailScore() }})</h3>
+    <h3>Score: {{ getScore() + '%'}} ({{ getDetailScore() }})</h3>
     @for (question of quiz.questions; track question.id) {
       <h3>Question {{ $index }}</h3>
       <div class="container mt-4">

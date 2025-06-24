@@ -13,7 +13,7 @@
         <small>{{ submission.createdAt | date: "short" }}</small>
       </div>
       <p class="mb-1">Language: {{ submission.language }}</p>
-      <small> Score: {{ submission.score * 100 }}/100</small>
+      <small> Score: {{ (submission.score * 100).toFixed(2) }}/100 + '%'</small>
     </button>
   }
 </div>
