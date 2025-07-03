@@ -28,71 +28,88 @@
   </div>
 </div>
 
-<!-- Questions and Answers -->
 <h4>Questions</h4>
-@for (
-  question of quiz()!.questions;
-  track question.id;
-  let idxQuestion = $index
-) {
-  <div class="border p-3 mb-3">
-    <label>Question {{ idxQuestion + 1 }}</label>
+<div
+  *ngFor="let question of quiz()!.questions; let idxQuestion = index; trackBy: trackByQuestionId"
+  class="border p-3 mb-3"
+>
+  <label class="fw-bold">Question {{ idxQuestion + 1 }}</label>
+  <div class="mb-2">
+    <label class="form-label">Type</label>
+    <select class="form-control" [(ngModel)]="question.type">
+      <option value="qcm">QCM</option>
+      <option value="fill-in-the-blank">Complétion</option>
+    </select>
+  </div>
+
+  <!-- QCM -->
+  <div *ngIf="question.type === 'qcm'">
     <textarea
-      type="text"
       class="form-control mb-2"
-      rows="1"
       [(ngModel)]="question.text"
-      placeholder="Enter Question Text"
-      (input)="autoResize($event)"
+      placeholder="Énoncé QCM"
+      rows="2"
     ></textarea>
-    <!-- Answers -->
-    @for (answer of question.answers; track answer.id; let idxAnswer = $index) {
-      <div class="input-group mb-2 align-items-center">
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="answer.option"
-          placeholder="Enter Answer Option"
-        />
-        <div class="form-check ms-3 d-flex">
-          <input
-            type="checkbox"
-            class="form-check-input larger-checkbox"
-            id="correctAnswer{{ idxQuestion }}-{{ idxAnswer }}"
-            [(ngModel)]="answer.isCorrect"
-          />
-          <label
-            class="form-check-label"
-            for="correctAnswer{{ idxQuestion }}-{{ idxAnswer }}"
-          >
-            Is correct?
-          </label>
-        </div>
-        <!-- Delete Answer Button -->
-        <button
-          class="btn btn-sm btn-outline-danger ms-2"
-          (click)="deleteAnswer(idxQuestion, idxAnswer)"
-        >
-          Delete Answer
-        </button>
-      </div>
-    }
-    <!-- Add/Delete Buttons for Answers -->
+    <div *ngFor="let answer of question.answers; let idxAnswer = index" class="d-flex align-items-center mb-2">
+      <input
+        class="form-control me-2"
+        [(ngModel)]="answer.option"
+        placeholder="Option"
+      />
+      <input
+        type="checkbox"
+        class="form-check-input me-2"
+        [(ngModel)]="answer.isCorrect"
+        id="correctAnswer{{ idxQuestion }}-{{ idxAnswer }}"
+      />
+      <label
+        class="form-check-label me-2"
+        for="correctAnswer{{ idxQuestion }}-{{ idxAnswer }}"
+      >
+        Correct
+      </label>
+      <button
+        class="btn btn-danger btn-sm"
+        (click)="deleteAnswer(idxQuestion, idxAnswer)"
+        type="button"
+      >
+        Supprimer
+      </button>
+    </div>
     <button
-      class="btn btn-sm btn-outline-primary"
+      class="btn btn-outline-primary btn-sm mt-2"
       (click)="addAnswer(idxQuestion)"
+      type="button"
     >
-      Add Answer
-    </button>
-    <button
-      class="btn btn-sm btn-outline-danger ms-2"
-      (click)="deleteQuestion(idxQuestion)"
-    >
-      Delete Question
+      Ajouter option
     </button>
   </div>
-}
 
-<button class="btn btn-sm btn-success" (click)="addQuestion()">
-  Add Question
-</button>
+  <!-- Complétion -->
+  <div *ngIf="question.type === 'fill-in-the-blank'">
+    <input
+      class="form-control mb-2"
+      [(ngModel)]="question.text"
+      placeholder="Ex: J'habite à {blank}"
+    />
+    <input
+      class="form-control"
+      [(ngModel)]="question.expectedAnswer"
+      placeholder="Réponse attendue"
+    />
+  </div>
+
+  <button
+    class="btn btn-outline-danger btn-sm mt-2"
+    (click)="deleteQuestion(idxQuestion)"
+    type="button"
+  >
+    Supprimer question
+  </button>
+</div>
+
+<div class="mt-3">
+  <button class="btn btn-sm btn-success" (click)="addQuestion()">
+    Add Question
+  </button>
+</div>

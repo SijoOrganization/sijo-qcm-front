@@ -1,41 +1,57 @@
 @for (question of quiz().questions; track question.id) {
-<h3>Question {{ $index }}</h3>
-<div class="container mt-4">
-  <div class="card shadow p-3 mb-4">
-    <div class="card-body">
-      <!-- Question Text -->
-      <div
-        class="card-title border rounded p-3"
-        style="white-space: pre-wrap; max-height: 500px; overflow-y: auto"
-      >
-        {{ question.text }}
-      </div>
-      <!-- Answers as Buttons -->
-      <form class="d-flex flex-column gap-3">
-        @for (answer of question.answers; track answer.id) { @let isSelected =
-        selectedResponses()[question.id].has(answer.id);
-        <div class="btn-group">
-          <input
-            class="btn-check"
-            type="checkbox"
-            [checked]="isSelected"
-            id="{{ question.id }}-{{ answer.id }}"
-            (change)="selectAnswer(question.id, answer.id)"
-          />
-          <label
-            class="btn btn-lg text-start btn-outline-primary qcm-option-label"
-            style="white-space: pre-wrap; max-height: 500px; overflow-y: auto"
-            for="{{ question.id }}-{{ answer.id }}"
-          >
-            <pre>{{ answer.option }}</pre>
-          </label>
+  <h3>Question {{ $index + 1 }}</h3>
+  <div class="container mt-4">
+    <div class="card shadow p-3 mb-4">
+      <div class="card-body">
+        <!-- Question Text (remplace {blank} par des tirets si complétion) -->
+        <div
+          class="card-title border rounded p-3"
+          style="white-space: pre-line; max-height: 500px; overflow-y: auto"
+        >
+          {{
+            question.type === 'fill-in-the-blank'
+              ? question.text.replace('{blank}', '__________')
+              : question.text
+          }}
         </div>
+
+        <!-- QCM -->
+        @if (question.type === 'qcm') {
+          <form class="d-flex flex-column gap-3">
+            @for (answer of question.answers; track answer.id) {
+              @let isSelected = selectedResponses()[question.id].has(answer.id);
+              <div class="btn-group">
+                <input
+                  class="btn-check"
+                  type="checkbox"
+                  [checked]="isSelected"
+                  id="{{ question.id }}-{{ answer.id }}"
+                  (change)="selectAnswer(question.id, answer.id)"
+                />
+                <label
+                  class="btn btn-lg text-start btn-outline-primary qcm-option-label"
+                  style="white-space: pre-wrap; max-height: 500px; overflow-y: auto"
+                  for="{{ question.id }}-{{ answer.id }}"
+                >
+                  {{ answer.option }}
+                </label>
+              </div>
+            }
+          </form>
         }
-      </form>
+
+        <!-- Complétion -->
+        @if (question.type === 'fill-in-the-blank') {
+          <input
+            type="text"
+            class="form-control mt-2"
+            [(ngModel)]="userFillAnswers[question.id]"
+            placeholder="Votre réponse"
+          />
+        }
+      </div>
     </div>
   </div>
-</div>
-
 }
 <div class="d-flex justify-content-center mt-4">
   <button class="btn btn-danger" (click)="openFinishConfirmationPopup()">

@@ -16,10 +16,11 @@ import { QuizService } from '../../services/quiz.service';
 import { FinishConfirmationComponent } from '../finish-confirmation/finish-confirmation.component';
 import { Router } from '@angular/router';
 import { SubmissionConfirmation } from '../../../../shared/models/submission.model';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-questions-container',
-    imports: [],
+    imports: [FormsModule],
     templateUrl: './questions-container.component.html',
     styleUrl: './questions-container.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -31,6 +32,7 @@ export class QuestionsContainerComponent implements OnInit {
   router = inject(Router);
 
   selectedResponses: WritableSignal<QuizAnswer> = signal({});
+  userFillAnswers: Record<string, string> = {};
 
   ngOnInit(): void {
     const newRecord: Record<string, Set<string>> = {};
@@ -58,14 +60,20 @@ export class QuestionsContainerComponent implements OnInit {
     });
   }
   private submit() {
-    this.quizService
-      .submit(this.selectedResponses(), this.quiz()._id!)
-      .subscribe((confirmation: SubmissionConfirmation) => {
-        this.router.navigate([`/submissions/${confirmation.submissionId}`]);
-      });
+    const responses: Record<string, Set<string>> = { ...this.selectedResponses() };
+    Object.entries(this.userFillAnswers).forEach(([questionId, userText]) => {
+      responses[questionId] = new Set([userText]);
+    });
+    this.quizService.submit(responses, this.quiz()._id!).subscribe((confirmation: SubmissionConfirmation) => {
+      this.router.navigate([`/submissions/${confirmation.submissionId}`]);
+    });
   }
 
   formatOption(option: string): string {
     return option ? option.replace(/\n/g, '<br>') : '';
+  }
+
+  trackByAnswerId(index: number, answer: any) {
+    return answer.id;
   }
 }

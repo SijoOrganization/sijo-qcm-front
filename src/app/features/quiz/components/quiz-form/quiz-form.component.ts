@@ -7,10 +7,11 @@ import {
 } from '@angular/core';
 import { Quiz } from '../../../../shared/models/quiz.model';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-quiz-form',
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './quiz-form.component.html',
   styleUrl: './quiz-form.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,31 +20,47 @@ export class QuizFormComponent {
   quiz = model.required<Quiz>();
   isEditing = input<Boolean>(false);
 
-  addQuestion(): void {
+  addQuestion(type: 'qcm' | 'fill-in-the-blank' = 'qcm'): void {
     this.quiz.update((quiz) => {
       const newId = `q${(quiz?.questions.length || 0) + 1}`;
-      quiz?.questions.push({
-        id: newId,
-        text: 'Text sample',
-        answers: [
-          { id: 'a1', option: 'option 1', isCorrect: true },
-          { id: 'a2', option: 'option 2' },
-          { id: 'a3', option: 'option 3' },
-        ],
-      });
+      if (type === 'qcm') {
+        quiz?.questions.push({
+          id: newId,
+          text: '',
+          type: 'qcm',
+          answers: [
+            { id: 'a1', option: '', isCorrect: false },
+            { id: 'a2', option: '', isCorrect: false },
+          ],
+        });
+      } else {
+        quiz?.questions.push({
+          id: newId,
+          text: '',
+          type: 'fill-in-the-blank',
+          expectedAnswer: '',
+        });
+      }
       return { ...quiz };
     });
+    this.quiz.set({ ...this.quiz() }); // <-- force la synchro
   }
 
   addAnswer(idxQuestion: number) {
     this.quiz.update((quiz) => {
-      quiz?.questions[idxQuestion].answers.push({
-        id: `a${quiz?.questions[idxQuestion].answers.length + 1}`,
-        option: 'new option',
-      });
-      ``;
+      const question = quiz?.questions[idxQuestion];
+      if (question) {
+        if (!question.answers) {
+          question.answers = [];
+        }
+        question.answers.push({
+          id: `a${question.answers.length + 1}`,
+          option: 'new option',
+        });
+      }
       return { ...quiz };
     });
+    this.quiz.set({ ...this.quiz() }); // <-- force la synchro
   }
 
   deleteAnswer(questionIndex: number, answerIndex: number) {
@@ -57,6 +74,7 @@ export class QuizFormComponent {
 
       return { ...quiz };
     });
+    this.quiz.set({ ...this.quiz() }); // <-- force la synchro
   }
   deleteQuestion(questionIndex: number) {
     this.quiz.update((quiz) => {
@@ -70,11 +88,59 @@ export class QuizFormComponent {
 
       return { ...quiz };
     });
+    this.quiz.set({ ...this.quiz() }); // <-- force la synchro
   }
 
   autoResize(event: Event) {
     const textarea = event.target as HTMLTextAreaElement;
     textarea.style.height = 'auto';
     textarea.style.height = textarea.scrollHeight + 'px';
+  }
+
+  trackByQuestionId(index: number, question: any) {
+    return question.id;
+  }
+
+  onTypeChange(idx: number, newType: 'qcm' | 'fill-in-the-blank') {
+    this.quiz().questions[idx].type = newType;
+    this.quiz.set({ ...this.quiz() }); // <-- force la synchro avec le JSON Editor
+  }
+
+  saveQuiz() {
+    const quiz = this.quiz();
+    const quizToSave = this.getFilteredQuizForJsonEditor(quiz);
+    console.log(JSON.stringify(quizToSave, null, 2));
+    // ...envoi quizToSave au backend...
+  }
+
+  private getFilteredQuizForJsonEditor(quiz: Quiz) {
+    return {
+      _id: quiz._id,
+      title: quiz.title,
+      explanation: quiz.explanation,
+      category: quiz.category,
+      questions: quiz.questions.map((q) => {
+        if (q.type === 'qcm') {
+          return {
+            id: q.id,
+            text: q.text,
+            type: 'qcm',
+            answers: (q.answers ?? []).map((a) => ({
+              id: a.id,
+              option: a.option,
+              isCorrect: a.isCorrect ?? null,
+            })),
+          };
+        } else if (q.type === 'fill-in-the-blank') {
+          return {
+            id: q.id,
+            text: q.text,
+            type: 'fill-in-the-blank',
+            expectedAnswer: q.expectedAnswer ?? '',
+          };
+        }
+        return {};
+      }),
+    };
   }
 }

@@ -7,9 +7,11 @@ export interface Quiz {
 }
 
 export interface Question {
-    id: string
-    text: string;
-    answers: Answer[];
+  id: string;
+  text: string;
+  type: 'qcm' | 'fill-in-the-blank';
+  answers?: { id: string; option: string; isCorrect?: boolean }[];
+  expectedAnswer?: string;
 }
 
 export interface Answer {

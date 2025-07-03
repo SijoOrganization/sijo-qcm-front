@@ -10,6 +10,7 @@ export const MockQuiz: Quiz = {
     {
       id: 'q1',
       text: "Quel est le type de retour de la méthode 'main' en Java ?",
+      type: 'qcm', // <-- Ajoute ce champ
       answers: [
         { id: 'a1', option: 'void', isCorrect: true },
         { id: 'a2', option: 'int', isCorrect: true },

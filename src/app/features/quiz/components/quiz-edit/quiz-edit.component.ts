@@ -35,7 +35,7 @@ export class QuizEditComponent implements OnInit {
   private quizBase?: Quiz;
   quiz = signal<Quiz>(JSON.parse(JSON.stringify(MockQuiz)));
   active = signal(1);
-  jsonQuiz = linkedSignal(() => JSON.stringify(this.quiz(), null, 2));
+  jsonQuiz = linkedSignal(() => JSON.stringify(this.getFilteredQuizForJsonEditor(this.quiz()), null, 2));
   editorOptions = JSON_EDITOR_CONFIT;
 
   ngOnInit(): void {
@@ -129,7 +129,38 @@ export class QuizEditComponent implements OnInit {
 
   checkJson() {
     try {
-      this.quiz.set(JSON.parse(this.jsonQuiz()));
+      const quiz = JSON.parse(this.jsonQuiz());
+      let valid = true;
+      let errorMsg = '';
+
+      quiz.questions.forEach((q: any, idx: number) => {
+        if (!q.type) {
+          // Heuristique : si answers existe, c’est un QCM, sinon complétion
+          if (q.answers && Array.isArray(q.answers)) {
+            q.type = 'qcm';
+          } else if (q.expectedAnswer) {
+            q.type = 'fill-in-the-blank';
+          } else {
+            valid = false;
+            errorMsg += `Question ${idx + 1} is missing 'type' and cannot be guessed.\n`;
+          }
+        }
+      });
+
+      if (!valid) {
+        this.alertService.setMessage({
+          message: errorMsg,
+          type: 'danger',
+        });
+        return false;
+      }
+
+      this.quiz.set(quiz);
+      this.alertService.setMessage({
+        message: 'JSON is valid',
+        type: 'success',
+      });
+      return true;
     } catch (error) {
       this.alertService.setMessage({
         message: 'Invalid JSON format. Please correct it.',
@@ -137,11 +168,6 @@ export class QuizEditComponent implements OnInit {
       });
       return false;
     }
-    this.alertService.setMessage({
-      message: 'JSON is valid',
-      type: 'success',
-    });
-    return true;
   }
 
   onTabChange(event: NgbNavChangeEvent): void {
@@ -155,5 +181,36 @@ export class QuizEditComponent implements OnInit {
   }
   get isEditing() {
     return !!this.route.snapshot.paramMap.get('id');
+  }
+
+  private getFilteredQuizForJsonEditor(quiz: Quiz) {
+    return {
+      _id: quiz._id,
+      title: quiz.title,
+      explanation: quiz.explanation,
+      category: quiz.category,
+      questions: quiz.questions.map((q) => {
+        if (q.type === 'qcm') {
+          return {
+            id: q.id,
+            text: q.text,
+            type: 'qcm',
+            answers: (q.answers ?? []).map((a) => ({
+              id: a.id,
+              option: a.option,
+              isCorrect: a.isCorrect ?? null,
+            })),
+          };
+        } else if (q.type === 'fill-in-the-blank') {
+          return {
+            id: q.id,
+            text: q.text,
+            type: 'fill-in-the-blank',
+            expectedAnswer: q.expectedAnswer ?? '',
+          };
+        }
+        return {};
+      }),
+    };
   }
 }

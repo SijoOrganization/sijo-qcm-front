@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { finalize, switchMap } from 'rxjs';
@@ -9,7 +10,7 @@ import { SubmissionService } from '../../services/submission.service';
 
 @Component({
   selector: 'app-submission',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './submission.component.html',
   styleUrl: './submission.component.css',
 })
@@ -65,5 +66,9 @@ export class SubmissionComponent implements OnInit {
           console.error('Error loading submission or quiz:', error);
         },
       });
+  }
+
+  setToArray<T>(set?: Set<T>): T[] {
+    return set ? Array.from(set) : [];
   }
 }

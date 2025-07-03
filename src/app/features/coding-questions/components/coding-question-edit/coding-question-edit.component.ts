@@ -47,6 +47,8 @@ export class CodingQuestionEditComponent {
     if (questionId) {
       this.fetchQuestion(questionId);
     }
+    // Removed reference to this.quiz() as it does not exist.
+    // If you need to initialize something here, add the correct logic or property.
   }
   fetchQuestion(codingQuestionId: string): void {
     this.codingQuestionService

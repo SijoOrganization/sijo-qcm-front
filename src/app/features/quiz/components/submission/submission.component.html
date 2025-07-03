@@ -55,6 +55,20 @@
                 </div>
               }
             </form>
+            <div *ngIf="question.type === 'fill-in-the-blank'">
+              <div>
+                <strong>Votre réponse :</strong>
+                {{
+                  submission.answers[question.id] && submission.answers[question.id].size > 0
+                    ? setToArray(submission.answers[question.id])[0]
+                    : 'Aucune réponse'
+                }}
+              </div>
+              <div>
+                <strong>Réponse correcte :</strong>
+                {{ question.expectedAnswer }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
