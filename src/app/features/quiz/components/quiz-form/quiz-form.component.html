@@ -87,11 +87,11 @@
 
   <!-- Complétion -->
   <div *ngIf="question.type === 'fill-in-the-blank'">
-    <input
+    <textarea
       class="form-control mb-2"
       [(ngModel)]="question.text"
-      placeholder="Ex: J'habite à {blank}"
-    />
+      placeholder="Ex: Java est un {blank}"
+    ></textarea>
     <input
       class="form-control"
       [(ngModel)]="question.expectedAnswer"

@@ -50,16 +50,30 @@
         class="bg-dark text-white p-3 d-flex align-items-center justify-content-between"
       >
         <h5 class="mb-0">Code Editor</h5>
-        <button class="btn btn-success" (click)="submitSolution()">
-          Submit Solution
-        </button>
+        <div>
+          <select
+            class="form-select d-inline w-auto"
+            [(ngModel)]="selectedLanguage"
+            (change)="updateCodeTemplate()"
+          >
+            <option value="java">Java</option>
+            <option value="python">Python</option>
+            <option value="typescript">TypeScript</option>
+          </select>
+          <button class="btn btn-success ms-2" (click)="submitSolution()">
+            Submit Solution
+          </button>
+        </div>
       </div>
 
       <!-- Monaco Editor -->
       <div class="overflow-auto h-50">
         <ngx-monaco-editor
-          [options]="editorOptions"
-          [(ngModel)]="code"
+          [options]="monacoOptions"
+          [(ngModel)]="code"  
+          [ngModelOptions]="{ standalone: true }"
+          [attr.data-key]="editorKey" 
+
           class="h-100 w-100"
         >
         </ngx-monaco-editor>

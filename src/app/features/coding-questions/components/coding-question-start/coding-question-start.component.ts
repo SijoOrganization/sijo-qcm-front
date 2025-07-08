@@ -17,6 +17,8 @@ import {
 } from '../../../../shared/models/codingQuestion.model';
 import { SpinnerService } from '../../../../shared/services/spinner.service';
 import { JavaCodeGenerator } from '../../codeGenerators/java.generator';
+import { PythonCodeGenerator } from '../../codeGenerators/python.generator';
+import { TypescriptCodeGenerator } from '../../codeGenerators/typescript.generator';
 import { CodingQuestionsService } from '../../services/coding-questions.service';
 import { CodeRunComponent } from '../code-run/code-run.component';
 import { CodingSubmissionDetailsComponent } from '../coding-submission-details/coding-submission-details.component';
@@ -47,28 +49,57 @@ export class CodingQuestionStartComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private spinner = inject(SpinnerService);
 
+  editorOptions = { language: 'java' };
+  code = '';
+  selectedLanguage = 'java';
+
   ngOnInit(): void {
     const questionId = this.route.snapshot.paramMap.get('id');
     if (questionId) {
       this.codingQuestionsService
         .getCodingQuestion(questionId)
         .subscribe((question) => {
-          {
-            this.codingQuestion.set(question);
-            this.code = this.generateFunctionTemplate(question, 'java');
-          }
+          this.codingQuestion.set(question);
+          this.code = this.generateFunctionTemplate(question, this.selectedLanguage);
         });
     }
   }
-  // Monaco Editor Options
-  editorOptions = { language: 'java' };
-  code = '';
-  // Placeholder for the submission logic
+
+  generateFunctionTemplate(
+    codingQuestion: CodingQuestion,
+    language: string,
+  ): string {
+    const signature = codingQuestion.functionSignatures.find(
+      (sig) => sig.language.toLowerCase() === language.toLowerCase(),
+    );
+    if (!signature) {
+      throw new Error(`Function signature not found for language: ${language}`);
+    }
+    switch (language.toLowerCase()) {
+      case 'java':
+        return JavaCodeGenerator.generateJavaCode(codingQuestion, signature);
+      case 'python':
+        return PythonCodeGenerator.generatePythonCode(codingQuestion, signature);
+      case 'typescript':
+        return TypescriptCodeGenerator.generateTypescriptCode(codingQuestion, signature);
+      default:
+        return '// No template available for this language';
+    }
+  }
+  editorKey=0
+  updateCodeTemplate() {
+    const question = this.codingQuestion();
+    if (question) {
+      this.code = this.generateFunctionTemplate(question, this.selectedLanguage);
+      this.editorKey++;
+  }
+}
+
   submitSolution() {
-    if (this.codingQuestion) {
+    if (this.codingQuestion()) {
       this.spinner.openGlobalSpinner();
       this.codingQuestionsService
-        .submitCodingQuestion(this.codingQuestion()?.id!, 'java', this.code)
+        .submitCodingQuestion(this.codingQuestion()!.id!, this.selectedLanguage, this.code)
         .pipe(
           finalize(() => {
             this.spinner.closeGlobalSpinner();
@@ -89,26 +120,16 @@ export class CodingQuestionStartComponent implements OnInit {
   createExampleInput() {
     return this.codingQuestion()?.testCases[0]?.input;
   }
+
   selectSubmission(submission: CodingSubmission) {
     this.currentSubmission.set(submission);
-    this.navigateToSubmissionTab();
-  }
-
-  generateFunctionTemplate(
-    codingQuestion: CodingQuestion,
-    language: string,
-  ): string {
-    const signature = codingQuestion.functionSignatures.find(
-      (sig) => sig.language.toLowerCase() === language.toLowerCase(),
-    );
-
-    if (!signature) {
-      throw new Error(`Function signature not found for language: ${language}`);
-    }
-    return JavaCodeGenerator.generateJavaCode(codingQuestion, signature);
-  }
-
-  private navigateToSubmissionTab() {
     this.active = 'submission-detail';
+  }
+
+  get monacoOptions() {
+    return {
+      ...this.editorOptions,
+      language: this.selectedLanguage,
+    };
   }
 }
