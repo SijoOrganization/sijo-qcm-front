@@ -1,0 +1,337 @@
+<div class="practice-mode-container">
+  <div class="container">
+    <!-- Practice Header -->
+    <div class="practice-header">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="practice-title">Practice Mode</h1>
+          <p class="practice-subtitle">Sharpen your skills with validated quizzes</p>
+        </div>
+        <div class="col-md-4">
+          <div class="practice-stats-mini">
+            <div class="stat-item">
+              <i class="fas fa-trophy text-warning me-2"></i>
+              Success Rate: {{ successRate() }}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz Selection View -->
+    <div *ngIf="showQuizSelection()" class="quiz-selection">
+      
+      <!-- Loading Indicator -->
+      <div *ngIf="isLoading()" class="text-center py-5">
+        <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+        <h5>Loading quiz...</h5>
+        <p class="text-muted">Please wait while we prepare your practice session.</p>
+      </div>
+      
+      <div *ngIf="!isLoading()" class="row">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-list-ul me-2"></i>
+                Available Practice Quizzes
+              </h5>
+            </div>
+            <div class="card-body">
+              <div *ngIf="!hasValidatedQuizzes()" class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No validated quizzes available</h5>
+                <p class="text-muted">Check back later for new practice content.</p>
+              </div>
+
+              <div *ngIf="hasValidatedQuizzes()" class="row">
+                <div *ngFor="let quiz of availableQuizzes()" class="col-md-6 mb-3">
+                  <div class="quiz-card card h-100 border-0 shadow-sm" 
+                       (click)="selectQuiz(quiz)">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="card-title fw-bold">{{ quiz.title }}</h6>
+                        <span class="badge bg-success">
+                          <i class="fas fa-leaf me-1"></i>
+                          {{ quiz.difficulty || 'medium' }}
+                        </span>
+                      </div>
+                      
+                      <p class="card-text text-muted small">{{ quiz.explanation }}</p>
+                      
+                      <div class="quiz-meta">
+                        <div class="row">
+                          <div class="col-6">
+                            <small class="text-muted">
+                              <i class="fas fa-question-circle me-1"></i>
+                              {{ quiz.questions.length || 0 }} questions
+                            </small>
+                          </div>
+                          <div class="col-6 text-end">
+                            <small class="text-muted">
+                              <i class="fas fa-clock me-1"></i>
+                              ~{{ quiz.estimatedTime || 30 }}min
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                      <button class="btn btn-primary btn-sm w-100">
+                        <i class="fas fa-play me-2"></i>
+                        Start Practice
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice Statistics -->
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="fas fa-chart-line me-2"></i>
+                Your Practice Stats
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="stats-grid">
+                <div class="stat-box">
+                  <div class="stat-number">{{ practiceStats().completedSessions }}</div>
+                  <div class="stat-label">Sessions</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">{{ practiceStats().totalQuestions }}</div>
+                  <div class="stat-label">Questions</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">{{ practiceStats().averageScore }}%</div>
+                  <div class="stat-label">Avg Score</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">{{ practiceStats().bestStreak }}</div>
+                  <div class="stat-label">Best Streak</div>
+                </div>
+              </div>
+              
+              <div class="progress-section mt-4">
+                <div class="d-flex justify-content-between mb-2">
+                  <small>Overall Progress</small>
+                  <small>{{ successRate() }}%</small>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-success" 
+                       [style.width.%]="successRate()"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Practice Session View -->
+    <div *ngIf="showPracticeSession()" class="practice-session">
+      <!-- Session Header -->
+      <div class="session-header card mb-4">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-3">
+              <h6 class="mb-0">{{ selectedQuiz()?.title }}</h6>
+              <small class="text-muted">Practice Session</small>
+            </div>
+            <div class="col-md-6">
+              <div class="progress">
+                <div class="progress-bar" 
+                     [style.width.%]="currentProgress()"></div>
+              </div>
+              <small class="text-muted">
+                Question {{ currentQuestionIndex() + 1 }} of {{ practiceQuestions().length }}
+              </small>
+            </div>
+            <div class="col-md-3 text-end">
+              <div class="timer">
+                <i class="fas fa-clock me-1"></i>
+                {{ formatTime(currentTimer()) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Question -->
+      <div *ngIf="currentQuestion()" class="question-container">
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge bg-info">
+                {{ currentQuestion()?.difficulty || 'medium' }}
+              </span>
+              <span class="question-type badge bg-secondary">
+                {{ currentQuestion()?.type }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <h5 class="question-title">{{ currentQuestion()?.text }}</h5>
+            <div class="question-content" [innerHTML]="currentQuestion()?.description || ''"></div>
+
+            <!-- QCM Answers -->
+            <div *ngIf="currentQuestion()?.type === 'qcm'" class="answer-options mt-4">
+              <div *ngFor="let answer of currentQuestion()?.answers" 
+                   class="answer-option"
+                   [class.selected]="userAnswers()[currentQuestion()?.id || ''] === answer.id"
+                   (click)="selectQCMAnswer(answer.id)">
+                <div class="answer-content">
+                  <div class="answer-text">{{ answer.option }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fill in the blank -->
+            <div *ngIf="currentQuestion()?.type === 'fill-in-the-blank'" class="mt-4">
+              <div class="form-group">
+                <label class="form-label">Your Answer:</label>
+                <input type="text" 
+                       class="form-control"
+                       [ngModel]="userAnswers()[currentQuestion()?.id || ''] || ''"
+                       (ngModelChange)="updateFillAnswer($event)"
+                       placeholder="Enter your answer">
+              </div>
+            </div>
+
+            <!-- Coding Question -->
+            <div *ngIf="currentQuestion()?.type === 'coding'" class="mt-4">
+              <div class="form-group">
+                <label class="form-label">Your Code:</label>
+                <textarea class="form-control code-editor" 
+                          rows="10"
+                          [ngModel]="userAnswers()[currentQuestion()?.id || ''] || ''"
+                          (ngModelChange)="updateCodingAnswer($event)"
+                          placeholder="Write your code here..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-outline-secondary"
+                      [disabled]="currentQuestionIndex() === 0"
+                      (click)="previousQuestion()">
+                <i class="fas fa-chevron-left me-2"></i>
+                Previous
+              </button>
+              
+              <button class="btn btn-primary"
+                      (click)="nextQuestion()">
+                <span *ngIf="currentQuestionIndex() < practiceQuestions().length - 1">
+                  Next
+                  <i class="fas fa-chevron-right ms-2"></i>
+                </span>
+                <span *ngIf="currentQuestionIndex() === practiceQuestions().length - 1">
+                  Finish
+                  <i class="fas fa-check ms-2"></i>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results View -->
+    <div *ngIf="showResults()" class="practice-results">
+      <div class="card">
+        <div class="card-header text-center bg-primary text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-trophy me-2"></i>
+            Practice Session Complete!
+          </h4>
+        </div>
+        
+        <div class="card-body">
+          <div class="row text-center mb-4">
+            <div class="col-md-3">
+              <div class="result-stat">
+                <div class="result-number text-primary">{{ sessionResults()?.score }}%</div>
+                <div class="result-label">Score</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="result-stat">
+                <div class="result-number text-success">{{ sessionResults()?.correctAnswers }}</div>
+                <div class="result-label">Correct</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="result-stat">
+                <div class="result-number text-info">{{ sessionResults()?.totalQuestions }}</div>
+                <div class="result-label">Total</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="result-stat">
+                <div class="result-number text-warning">{{ formatTime(sessionResults()?.timeSpent || 0) }}</div>
+                <div class="result-label">Time</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Indicator -->
+          <div class="performance-indicator text-center mb-4">
+            <div *ngIf="(sessionResults()?.score || 0) >= 80" class="alert alert-success">
+              <i class="fas fa-star fa-2x mb-2"></i>
+              <h5>Excellent Work!</h5>
+              <p>You've mastered this content. Keep up the great work!</p>
+            </div>
+            <div *ngIf="(sessionResults()?.score || 0) >= 60 && (sessionResults()?.score || 0) < 80" class="alert alert-warning">
+              <i class="fas fa-thumbs-up fa-2x mb-2"></i>
+              <h5>Good Job!</h5>
+              <p>You're on the right track. Review the missed questions for improvement.</p>
+            </div>
+            <div *ngIf="(sessionResults()?.score || 0) < 60" class="alert alert-info">
+              <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+              <h5>Keep Learning!</h5>
+              <p>Practice makes perfect. Review the material and try again.</p>
+            </div>
+          </div>
+
+          <!-- Detailed Results -->
+          <div class="detailed-results">
+            <h6>Question Review:</h6>
+            <div class="questions-review">
+              <div *ngFor="let result of sessionResults()?.answers; let i = index" 
+                   class="question-result mb-2 p-2 border rounded"
+                   [class.bg-success-subtle]="result.isCorrect"
+                   [class.bg-danger-subtle]="!result.isCorrect">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold">Q{{ i + 1 }}: {{ result.question.text }}</span>
+                  <span class="result-icon">
+                    <i *ngIf="result.isCorrect" class="fas fa-check text-success"></i>
+                    <i *ngIf="!result.isCorrect" class="fas fa-times text-danger"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer text-center">
+          <button class="btn btn-primary me-3" (click)="startNewPractice()">
+            <i class="fas fa-redo me-2"></i>
+            Practice Again
+          </button>
+          <button class="btn btn-outline-secondary" routerLink="/quizzes">
+            <i class="fas fa-home me-2"></i>
+            Back to Quizzes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

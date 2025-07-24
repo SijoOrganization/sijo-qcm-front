@@ -1,0 +1,520 @@
+<div class="admin-dashboard">
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="container-fluid">
+      <h1 class="admin-title">
+        <i class="fas fa-cogs me-3"></i>
+        Administration Dashboard
+      </h1>
+      <nav class="admin-nav">
+        <button 
+          class="nav-btn" 
+          [class.active]="currentTab() === 'dashboard'"
+          (click)="switchTab('dashboard')"
+        >
+          <i class="fas fa-tachometer-alt"></i>
+          Dashboard
+        </button>
+        <button 
+          class="nav-btn" 
+          [class.active]="currentTab() === 'quizzes'"
+          (click)="switchTab('quizzes')"
+        >
+          <i class="fas fa-question-circle"></i>
+          Quiz Management
+        </button>
+        <button 
+          class="nav-btn" 
+          [class.active]="currentTab() === 'questions'"
+          (click)="switchTab('questions')"
+        >
+          <i class="fas fa-database"></i>
+          Question Bank
+        </button>
+        <button 
+          class="nav-btn" 
+          [class.active]="currentTab() === 'settings'"
+          (click)="switchTab('settings')"
+        >
+          <i class="fas fa-cog"></i>
+          Settings
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Dashboard Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'dashboard'">
+    <div class="row">
+      <!-- Statistics Cards -->
+      <div class="col-md-3 mb-4">
+        <div class="stat-card quiz-stats">
+          <div class="stat-icon">
+            <i class="fas fa-clipboard-list"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats().totalQuizzes }}</h3>
+            <p>Total Quizzes</p>
+            <small>{{ stats().validatedQuizzes }} validated, {{ stats().pendingQuizzes }} pending</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 mb-4">
+        <div class="stat-card question-stats">
+          <div class="stat-icon">
+            <i class="fas fa-question"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats().totalQuestions }}</h3>
+            <p>Total Questions</p>
+            <small>{{ stats().validatedQuestions }} validated, {{ stats().pendingQuestions }} pending</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 mb-4">
+        <div class="stat-card ai-stats">
+          <div class="stat-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats().aiGeneratedQuizzes }}</h3>
+            <p>AI Generated</p>
+            <small>{{ stats().manuallyCreatedQuizzes }} manually created</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 mb-4">
+        <div class="stat-card validation-stats">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ ((stats().validatedQuizzes + stats().validatedQuestions) / (stats().totalQuizzes + stats().totalQuestions) * 100) | number:'1.1-1' }}%</h3>
+            <p>Validation Rate</p>
+            <small>Content validation status</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">
+              <i class="fas fa-bolt me-2"></i>
+              Quick Actions
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3">
+                <button 
+                  class="btn btn-primary btn-lg w-100 mb-3"
+                  (click)="showQuestionForm.set(true)"
+                >
+                  <i class="fas fa-plus me-2"></i>
+                  Add New Question
+                </button>
+              </div>
+              <div class="col-md-3">
+                <button 
+                  class="btn btn-success btn-lg w-100 mb-3"
+                  [routerLink]="['/quizzes/create']"
+                >
+                  <i class="fas fa-plus me-2"></i>
+                  Create New Quiz
+                </button>
+              </div>
+              <div class="col-md-3">
+                <button 
+                  class="btn btn-warning btn-lg w-100 mb-3"
+                  (click)="switchTab('quizzes')"
+                >
+                  <i class="fas fa-clock me-2"></i>
+                  Review Pending ({{ stats().pendingQuizzes }})
+                </button>
+              </div>
+              <div class="col-md-3">
+                <button 
+                  class="btn btn-info btn-lg w-100 mb-3"
+                  [routerLink]="['/quizzes/question-bank']"
+                >
+                  <i class="fas fa-database me-2"></i>
+                  Manage Question Bank
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz Management Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'quizzes'">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">
+              <i class="fas fa-question-circle me-2"></i>
+              Quiz Management
+            </h5>
+          </div>
+          <div class="card-body">
+            <!-- Pending Quizzes -->
+            <div class="mb-4" *ngIf="pendingQuizzes().length > 0">
+              <h6 class="text-warning">
+                <i class="fas fa-clock me-2"></i>
+                Pending Validation ({{ pendingQuizzes().length }})
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Type</th>
+                      <th>Questions</th>
+                      <th>Difficulty</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let quiz of pendingQuizzes()">
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <i [class]="getQuizTypeIcon(quiz)" class="me-2"></i>
+                          {{ quiz.title }}
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary">{{ quiz.category }}</span>
+                      </td>
+                      <td>{{ quiz.questions.length || 0 }}</td>
+                      <td>
+                        <span class="badge" [class.bg-success]="quiz.difficulty === 'easy'" 
+                              [class.bg-warning]="quiz.difficulty === 'medium'"
+                              [class.bg-danger]="quiz.difficulty === 'hard'">
+                          {{ quiz.difficulty }}
+                        </span>
+                      </td>
+                      <td>{{ quiz.estimatedTime || 30 }} min</td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <button 
+                            class="btn btn-sm btn-outline-primary"
+                            (click)="previewQuiz(quiz)"
+                            title="Preview"
+                          >
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-success"
+                            (click)="validateQuiz(quiz)"
+                            title="Validate"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-warning"
+                            (click)="editQuiz(quiz)"
+                            title="Edit"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="deleteQuiz(quiz)"
+                            title="Delete"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Validated Quizzes -->
+            <div class="mb-4">
+              <h6 class="text-success">
+                <i class="fas fa-check-circle me-2"></i>
+                Validated Quizzes ({{ validatedQuizzes().length }})
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Type</th>
+                      <th>Questions</th>
+                      <th>Difficulty</th>
+                      <th>Validated By</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let quiz of validatedQuizzes()">
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <i [class]="getQuizTypeIcon(quiz)" class="me-2"></i>
+                          {{ quiz.title }}
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary">{{ quiz.category }}</span>
+                      </td>
+                      <td>{{ quiz.questions.length || 0 }}</td>
+                      <td>
+                        <span class="badge" [class.bg-success]="quiz.difficulty === 'easy'" 
+                              [class.bg-warning]="quiz.difficulty === 'medium'"
+                              [class.bg-danger]="quiz.difficulty === 'hard'">
+                          {{ quiz.difficulty }}
+                        </span>
+                      </td>
+                      <td>{{ quiz.validatedBy || 'System' }}</td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <button 
+                            class="btn btn-sm btn-outline-primary"
+                            (click)="previewQuiz(quiz)"
+                            title="View"
+                          >
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-warning"
+                            (click)="editQuiz(quiz)"
+                            title="Edit"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="deleteQuiz(quiz)"
+                            title="Delete"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Question Bank Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'questions'">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-database me-2"></i>
+                Question Bank Management
+              </h5>
+              <button 
+                class="btn btn-primary"
+                (click)="openQuestionForm()"
+              >
+                <i class="fas fa-plus me-2"></i>
+                Add New Question
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Pending Questions -->
+            <div class="mb-4" *ngIf="pendingQuestions().length > 0">
+              <h6 class="text-warning">
+                <i class="fas fa-clock me-2"></i>
+                Pending Validation ({{ pendingQuestions().length }})
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Question</th>
+                      <th>Type</th>
+                      <th>Language</th>
+                      <th>Difficulty</th>
+                      <th>Tags</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let question of pendingQuestions()">
+                      <td>
+                        <div class="question-preview">
+                          {{ question.text.substring(0, 80) }}{{ question.text.length > 80 ? '...' : '' }}
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-info">{{ question.type }}</span>
+                      </td>
+                      <td>{{ question.language }}</td>
+                      <td>
+                        <span class="badge" [class.bg-success]="question.difficulty === 'easy'" 
+                              [class.bg-warning]="question.difficulty === 'medium'"
+                              [class.bg-danger]="question.difficulty === 'hard'">
+                          {{ question.difficulty }}
+                        </span>
+                      </td>
+                      <td>
+                        <span 
+                          *ngFor="let tag of question.tags" 
+                          class="badge bg-secondary me-1"
+                        >
+                          {{ tag }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <button 
+                            class="btn btn-sm btn-outline-success"
+                            (click)="validateQuestion(question)"
+                            title="Validate"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="deleteQuestion(question)"
+                            title="Delete"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Validated Questions -->
+            <div class="mb-4">
+              <h6 class="text-success">
+                <i class="fas fa-check-circle me-2"></i>
+                Validated Questions ({{ validatedQuestions().length }})
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Question</th>
+                      <th>Type</th>
+                      <th>Language</th>
+                      <th>Difficulty</th>
+                      <th>Tags</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let question of validatedQuestions()">
+                      <td>
+                        <div class="question-preview">
+                          {{ question.text.substring(0, 80) }}{{ question.text.length > 80 ? '...' : '' }}
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-info">{{ question.type }}</span>
+                      </td>
+                      <td>{{ question.language }}</td>
+                      <td>
+                        <span class="badge" [class.bg-success]="question.difficulty === 'easy'" 
+                              [class.bg-warning]="question.difficulty === 'medium'"
+                              [class.bg-danger]="question.difficulty === 'hard'">
+                          {{ question.difficulty }}
+                        </span>
+                      </td>
+                      <td>
+                        <span 
+                          *ngFor="let tag of question.tags" 
+                          class="badge bg-secondary me-1"
+                        >
+                          {{ tag }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <button 
+                            class="btn btn-sm btn-outline-warning"
+                            title="Edit"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="deleteQuestion(question)"
+                            title="Delete"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'settings'">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">
+              <i class="fas fa-cog me-2"></i>
+              System Settings
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              System settings will be implemented in future versions.
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <h6>AI Configuration</h6>
+                <p>Configure AI quiz generation parameters, API keys, and model settings.</p>
+              </div>
+              <div class="col-md-6">
+                <h6>Validation Rules</h6>
+                <p>Set up automatic validation rules and expert reviewer assignments.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Question Form Modal -->
+<app-question-form 
+  *ngIf="showQuestionForm()"
+  [question]="editingQuestion()"
+  (questionSaved)="onQuestionSaved($event)"
+  (formClosed)="closeQuestionForm()"
+></app-question-form>

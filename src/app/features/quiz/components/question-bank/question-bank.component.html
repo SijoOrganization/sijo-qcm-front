@@ -1,0 +1,352 @@
+<div class="question-bank-container">
+  <!-- Header Section -->
+  <div class="header">
+    <h2>Question Bank</h2>
+    <div class="header-actions">
+      <button 
+        class="btn btn-primary" 
+        (click)="showAddForm.set(true)"
+        [disabled]="showAddForm()">
+        <i class="fas fa-plus"></i> Add Question
+      </button>
+      <button 
+        class="btn btn-secondary" 
+        (click)="exportQuestions()">
+        <i class="fas fa-download"></i> Export
+      </button>
+      <label class="btn btn-secondary">
+        <i class="fas fa-upload"></i> Import
+        <input type="file" accept=".json" (change)="importQuestions($event)" style="display: none;">
+      </label>
+    </div>
+  </div>
+
+  <!-- Statistics Section -->
+  <div class="stats-section">
+    <div class="stat-card">
+      <h3>{{ stats().totalQuestions }}</h3>
+      <p>Total Questions</p>
+    </div>
+    <div class="stat-card">
+      <h3>{{ stats().validatedQuestions }}</h3>
+      <p>Validated</p>
+    </div>
+    <div class="stat-card">
+      <h3>{{ Object.keys(stats().byLanguage).length }}</h3>
+      <p>Languages</p>
+    </div>
+    <div class="stat-card">
+      <h3>{{ Object.keys(stats().byDifficulty).length }}</h3>
+      <p>Difficulties</p>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="filter-group">
+      <label>Language:</label>
+      <select 
+        [ngModel]="filter().language" 
+        (ngModelChange)="updateFilter('language', $event)">
+        <option value="">All Languages</option>
+        <option *ngFor="let lang of availableLanguages" [value]="lang">{{ lang }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Difficulty:</label>
+      <select 
+        [ngModel]="filter().difficulty" 
+        (ngModelChange)="updateFilter('difficulty', $event)">
+        <option value="">All Difficulties</option>
+        <option *ngFor="let diff of availableDifficulties" [value]="diff">{{ diff | titlecase }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Type:</label>
+      <select 
+        [ngModel]="filter().type" 
+        (ngModelChange)="updateFilter('type', $event)">
+        <option value="">All Types</option>
+        <option *ngFor="let type of availableTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Category:</label>
+      <select 
+        [ngModel]="filter().category" 
+        (ngModelChange)="updateFilter('category', $event)">
+        <option value="">All Categories</option>
+        <option *ngFor="let cat of availableCategories" [value]="cat">{{ cat }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Status:</label>
+      <select 
+        [ngModel]="filter().validated" 
+        (ngModelChange)="updateFilter('validated', $event)">
+        <option value="">All Status</option>
+        <option [value]="true">Validated</option>
+        <option [value]="false">Not Validated</option>
+      </select>
+    </div>
+
+    <button class="btn btn-secondary" (click)="clearFilters()">Clear Filters</button>
+  </div>
+
+  <!-- Batch Actions -->
+  <div class="batch-actions" *ngIf="selectedQuestions().size > 0">
+    <span class="selected-count">{{ selectedQuestions().size }} selected</span>
+    <button class="btn btn-success" (click)="validateSelectedQuestions()">
+      <i class="fas fa-check"></i> Validate
+    </button>
+    <button class="btn btn-danger" (click)="deleteSelectedQuestions()">
+      <i class="fas fa-trash"></i> Delete
+    </button>
+    <button class="btn btn-secondary" (click)="clearSelection()">
+      <i class="fas fa-times"></i> Clear
+    </button>
+  </div>
+
+  <!-- View Mode Toggle -->
+  <div class="view-toggle">
+    <button 
+      class="btn" 
+      [class.active]="viewMode() === 'grid'"
+      (click)="viewMode.set('grid')">
+      <i class="fas fa-th"></i> Grid
+    </button>
+    <button 
+      class="btn" 
+      [class.active]="viewMode() === 'list'"
+      (click)="viewMode.set('list')">
+      <i class="fas fa-list"></i> List
+    </button>
+  </div>
+
+  <!-- Add Question Form -->
+  <div class="add-question-form" *ngIf="showAddForm()">
+    <div class="form-header">
+      <h3>Add New Question</h3>
+      <button class="btn btn-close" (click)="showAddForm.set(false)">×</button>
+    </div>
+
+    <form (ngSubmit)="addNewQuestion()">
+      <div class="form-group">
+        <label>Question Text:</label>
+        <textarea 
+          [ngModel]="newQuestion().text" 
+          (ngModelChange)="updateNewQuestion('text', $event)"
+          placeholder="Enter question text..."
+          rows="3"
+          required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type:</label>
+          <select 
+            [ngModel]="newQuestion().type" 
+            (ngModelChange)="updateNewQuestion('type', $event)">
+            <option *ngFor="let type of availableTypes" [value]="type.value">{{ type.label }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Language:</label>
+          <select 
+            [ngModel]="newQuestion().language" 
+            (ngModelChange)="updateNewQuestion('language', $event)">
+            <option *ngFor="let lang of availableLanguages" [value]="lang">{{ lang }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Difficulty:</label>
+          <select 
+            [ngModel]="newQuestion().difficulty" 
+            (ngModelChange)="updateNewQuestion('difficulty', $event)">
+            <option *ngFor="let diff of availableDifficulties" [value]="diff">{{ diff | titlecase }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Category:</label>
+        <select 
+          [ngModel]="newQuestion().category" 
+          (ngModelChange)="updateNewQuestion('category', $event)">
+          <option value="">Select Category</option>
+          <option *ngFor="let cat of availableCategories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <!-- QCM Answers -->
+      <div class="answers-section" *ngIf="newQuestion().type === 'qcm'">
+        <label>Answers:</label>
+        <div class="answer-item" *ngFor="let answer of newQuestion().answers; let i = index">
+          <input 
+            type="text" 
+            [ngModel]="answer.option" 
+            (ngModelChange)="updateAnswer(i, 'option', $event)"
+            placeholder="Answer option">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              [ngModel]="answer.isCorrect" 
+              (ngModelChange)="updateAnswer(i, 'isCorrect', $event)">
+            Correct
+          </label>
+          <button 
+            type="button" 
+            class="btn btn-danger btn-sm" 
+            (click)="removeAnswer(i)"
+            *ngIf="newQuestion().answers.length > 2">
+            Remove
+          </button>
+        </div>
+        <button type="button" class="btn btn-secondary" (click)="addAnswer()">Add Answer</button>
+      </div>
+
+      <!-- Fill-in-the-blank Expected Answer -->
+      <div class="form-group" *ngIf="newQuestion().type === 'fill-in-the-blank'">
+        <label>Expected Answer:</label>
+        <input 
+          type="text" 
+          [ngModel]="newQuestion().expectedAnswer" 
+          (ngModelChange)="updateNewQuestion('expectedAnswer', $event)"
+          placeholder="Enter expected answer">
+      </div>
+
+      <!-- Coding Question Details -->
+      <div class="coding-section" *ngIf="newQuestion().type === 'coding'">
+        <div class="form-group">
+          <label>Function Name:</label>
+          <input 
+            type="text" 
+            [ngModel]="newQuestion().functionName" 
+            (ngModelChange)="updateNewQuestion('functionName', $event)"
+            placeholder="Enter function name">
+        </div>
+
+        <div class="form-group">
+          <label>Code Template:</label>
+          <textarea 
+            [ngModel]="newQuestion().code" 
+            (ngModelChange)="updateNewQuestion('code', $event)"
+            placeholder="Enter code template..."
+            rows="5"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add Question</button>
+        <button type="button" class="btn btn-secondary" (click)="showAddForm.set(false)">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Questions List -->
+  <div class="questions-container" *ngIf="!isLoading(); else loadingTemplate">
+    <div class="questions-grid" *ngIf="viewMode() === 'grid'">
+      <div class="question-card" *ngFor="let question of questions()">
+        <div class="card-header">
+          <input 
+            type="checkbox" 
+            [checked]="selectedQuestions().has(question.id)"
+            (change)="toggleQuestionSelection(question.id)">
+          <span class="question-type">{{ question.type }}</span>
+          <span class="validation-badge" [class.validated]="question.validity">
+            <i class="fas" [class.fa-check]="question.validity" [class.fa-times]="!question.validity"></i>
+          </span>
+        </div>
+
+        <div class="card-content">
+          <h4>{{ question.text }}</h4>
+          <div class="question-meta">
+            <span class="language">{{ question.language }}</span>
+            <span class="difficulty" [class]="question.difficulty">{{ question.difficulty }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn btn-sm btn-primary">Edit</button>
+          <button 
+            class="btn btn-sm" 
+            [class.btn-success]="question.validity"
+            [class.btn-warning]="!question.validity"
+            (click)="validateQuestion(question.id, !question.validity)">
+            {{ question.validity ? 'Validated' : 'Validate' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="questions-list" *ngIf="viewMode() === 'list'">
+      <div class="list-header">
+        <input 
+          type="checkbox" 
+          [checked]="selectedQuestions().size === questions().length && questions().length > 0"
+          (change)="handleSelectAllChange($event)">
+        <span>Question</span>
+        <span>Type</span>
+        <span>Language</span>
+        <span>Difficulty</span>
+        <span>Status</span>
+        <span>Actions</span>
+      </div>
+
+      <div class="list-item" *ngFor="let question of questions()">
+        <input 
+          type="checkbox" 
+          [checked]="selectedQuestions().has(question.id)"
+          (change)="toggleQuestionSelection(question.id)">
+        <span class="question-text">{{ question.text }}</span>
+        <span class="question-type">{{ question.type }}</span>
+        <span class="language">{{ question.language }}</span>
+        <span class="difficulty" [class]="question.difficulty">{{ question.difficulty }}</span>
+        <span class="validation-status" [class.validated]="question.validity">
+          <i class="fas" [class.fa-check]="question.validity" [class.fa-times]="!question.validity"></i>
+        </span>
+        <div class="actions">
+          <button class="btn btn-sm btn-primary">Edit</button>
+          <button 
+            class="btn btn-sm" 
+            [class.btn-success]="question.validity"
+            [class.btn-warning]="!question.validity"
+            (click)="validateQuestion(question.id, !question.validity)">
+            {{ question.validity ? 'Validated' : 'Validate' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages() > 1">
+    <button 
+      class="btn btn-secondary" 
+      (click)="previousPage()" 
+      [disabled]="currentPage() === 1">
+      Previous
+    </button>
+    <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+    <button 
+      class="btn btn-secondary" 
+      (click)="nextPage()" 
+      [disabled]="currentPage() === totalPages()">
+      Next
+    </button>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading questions...</p>
+    </div>
+  </ng-template>
+</div>

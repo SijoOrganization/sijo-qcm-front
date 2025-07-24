@@ -1,0 +1,72 @@
+<div class="container-fluid mt-4" *ngIf="quiz">
+  <div class="row">
+    <!-- Sidebar: Liste des questions -->
+    <div class="col-md-3 border-end" style="min-height: 80vh;">
+      <h5>Questions</h5>
+      <ul class="list-group">
+        <li
+          *ngFor="let q of quiz.questions; let i = index"
+          [class.active]="i === selectedQuestionIdx"
+          (click)="selectQuestion(i)"
+          class="list-group-item list-group-item-action"
+          style="cursor:pointer;"
+        >
+          {{ i + 1 }}. {{ q.type === 'coding' ? 'Coding' : (q.type === 'qcm' ? 'QCM' : 'Blank') }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main: Question courante -->
+    <div class="col-md-9">
+      <form *ngIf="!quizFinished && currentQuestion" (ngSubmit)="finishQuiz()">
+        <div class="mb-4">
+          <h4>Question {{ selectedQuestionIdx + 1 }} / {{ quiz.questions.length || 0 }}</h4>
+          <div class="mb-2"><strong>{{ currentQuestion.text }}</strong></div>
+          <div *ngIf="currentQuestion.type === 'qcm'">
+            <div *ngFor="let ans of currentQuestion.answers">
+              <label>
+                <input type="radio" [name]="currentQuestion.id" [value]="ans.id" [(ngModel)]="quizAnswers[currentQuestion.id]" />
+                {{ ans.option }}
+              </label>
+            </div>
+          </div>
+          <div *ngIf="currentQuestion.type === 'fill-in-the-blank'">
+            <input class="form-control" [(ngModel)]="quizAnswers[currentQuestion.id]" placeholder="Votre réponse" />
+          </div>
+          <div *ngIf="currentQuestion.type === 'coding'">
+            <div class="row">
+              <div class="col-md-7">
+                <label class="fw-bold">Template code</label>
+                <pre class="bg-light p-2" style="max-height:200px;overflow:auto">{{ codeTemplates[currentQuestion.id] }}</pre>
+                <label class="fw-bold mt-2">Votre code</label>
+                <textarea class="form-control" [(ngModel)]="quizCode[currentQuestion.id]" rows="10"></textarea>
+                <label class="fw-bold mt-2">Entrée personnalisée (stdin)</label>
+                <textarea class="form-control" [(ngModel)]="quizInput[currentQuestion.id]" rows="2" placeholder="Entrée pour tester"></textarea>
+                <button class="btn btn-outline-primary mt-2 me-2" type="button" (click)="testCode(currentQuestion.id)">Tester</button>
+              </div>
+              <div class="col-md-5">
+                <h6>Test Cases</h6>
+                <ul>
+                  <li *ngFor="let tc of currentQuestion.testCases">
+                    Input: <code>{{ tc.input }}</code> | Output attendu: <code>{{ tc.expectedOutput }}</code>
+                  </li>
+                </ul>
+                <div *ngIf="quizCodeResult[currentQuestion.id]">
+                  <strong>Résultat :</strong>
+                  <pre>{{ quizCodeResult[currentQuestion.id] | json }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-success" type="submit">Terminer le quiz</button>
+        <button class="btn btn-secondary ms-2" type="button" (click)="backToList()">Annuler</button>
+      </form>
+      <div *ngIf="quizFinished" class="mt-4">
+        <h3>Quiz terminé !</h3>
+        <p>Score : {{ quizScore }}%</p>
+        <button class="btn btn-secondary" (click)="backToList()">Retour</button>
+      </div>
+    </div>
+  </div>
+</div>

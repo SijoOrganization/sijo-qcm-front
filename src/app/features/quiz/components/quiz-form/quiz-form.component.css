@@ -1,12 +1,235 @@
 .larger-checkbox {
-    width: 1.5em;
-    height: 1.5em;
-    margin-right: 0.5em;
-    cursor: pointer;
-  }
+  width: 1.5em;
+  height: 1.5em;
+  margin-right: 0.5em;
+  cursor: pointer;
+}
 
-  .form-check-label {
-    font-size: 1rem;
-    margin-left: 0.2em;
-    cursor: pointer;
+.form-check-label {
+  font-size: 1rem;
+  margin-left: 0.2em;
+  cursor: pointer;
+}
+
+/* Quiz Interface Styling */
+.quiz-sidebar {
+  background: #f8f9fa;
+  border-right: 2px solid #dee2e6;
+  padding: 1rem;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.quiz-main {
+  padding: 2rem;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.question-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.question-item {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #dee2e6;
+  background: white;
+}
+
+.question-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.question-item.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.question-item.active:hover {
+  background: #0056b3;
+}
+
+.question-header {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border-left: 4px solid #007bff;
+}
+
+.question-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.code-editor {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.code-template {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.test-cases {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.test-case {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  border-left: 3px solid #28a745;
+}
+
+.test-result {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.test-result.success {
+  border-left: 4px solid #28a745;
+}
+
+.test-result.error {
+  border-left: 4px solid #dc3545;
+}
+
+.quiz-actions {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.quiz-finished {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.quiz-finished .score {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #28a745;
+  margin: 1rem 0;
+}
+
+.answer-option {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.answer-option:hover {
+  background: #f8f9fa;
+  border-color: #007bff;
+}
+
+.answer-option input[type="radio"] {
+  margin-right: 0.75rem;
+}
+
+.question-progress {
+  background: #e9ecef;
+  height: 4px;
+  border-radius: 2px;
+  margin-bottom: 1rem;
+}
+
+.question-progress-bar {
+  background: #007bff;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.btn-test-code {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-test-code:hover {
+  background: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-2px);
+}
+
+.btn-finish-quiz {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-finish-quiz:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .quiz-sidebar {
+    height: auto;
+    margin-bottom: 1rem;
   }
+  
+  .quiz-main {
+    height: auto;
+  }
+  
+  .question-header {
+    padding: 1rem;
+  }
+  
+  .question-content {
+    padding: 1rem;
+  }
+}

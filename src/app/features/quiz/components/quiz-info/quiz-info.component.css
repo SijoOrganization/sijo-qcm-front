@@ -1,0 +1,75 @@
+/* Quiz Info Component Styles */
+.quiz-info-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.question-preview {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.code-preview {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.code-preview pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+}
+
+.accordion-button {
+  background-color: #fff;
+  border: none;
+  box-shadow: none;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.quiz-action-buttons .btn {
+  min-width: 140px;
+}
+
+.badge {
+  font-size: 0.8rem;
+}
+
+.list-group-item {
+  border: 1px solid #dee2e6;
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .quiz-action-buttons .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stat-item {
+    font-size: 0.9rem;
+  }
+}

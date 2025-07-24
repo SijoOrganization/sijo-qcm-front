@@ -1,115 +1,237 @@
-<div>
-  <div class="mb-2">
-    <label class="form-label">Title</label>
-    <input
-      type="text"
-      class="form-control"
-      [(ngModel)]="quiz()!.title"
-      placeholder="Enter Quiz Title"
-    />
-  </div>
-  <div class="mb-2">
-    <label class="form-label">Explanation</label>
-    <textarea
-      class="form-control"
-      rows="3"
-      [(ngModel)]="quiz()!.explanation"
-      placeholder="Enter Explanation"
-    ></textarea>
-  </div>
-  <div class="mb-2">
-    <label class="form-label">Category</label>
-    <input
-      type="text"
-      class="form-control"
-      [(ngModel)]="quiz()!.category"
-      placeholder="Enter Category"
-    />
-  </div>
-</div>
-
-<h4>Questions</h4>
-<div
-  *ngFor="let question of quiz()!.questions; let idxQuestion = index; trackBy: trackByQuestionId"
-  class="border p-3 mb-3"
->
-  <label class="fw-bold">Question {{ idxQuestion + 1 }}</label>
-  <div class="mb-2">
-    <label class="form-label">Type</label>
-    <select class="form-control" [(ngModel)]="question.type">
-      <option value="qcm">QCM</option>
-      <option value="fill-in-the-blank">Complétion</option>
-    </select>
-  </div>
-
-  <!-- QCM -->
-  <div *ngIf="question.type === 'qcm'">
-    <textarea
-      class="form-control mb-2"
-      [(ngModel)]="question.text"
-      placeholder="Énoncé QCM"
-      rows="2"
-    ></textarea>
-    <div *ngFor="let answer of question.answers; let idxAnswer = index" class="d-flex align-items-center mb-2">
-      <input
-        class="form-control me-2"
-        [(ngModel)]="answer.option"
-        placeholder="Option"
-      />
-      <input
-        type="checkbox"
-        class="form-check-input me-2"
-        [(ngModel)]="answer.isCorrect"
-        id="correctAnswer{{ idxQuestion }}-{{ idxAnswer }}"
-      />
-      <label
-        class="form-check-label me-2"
-        for="correctAnswer{{ idxQuestion }}-{{ idxAnswer }}"
-      >
-        Correct
-      </label>
-      <button
-        class="btn btn-danger btn-sm"
-        (click)="deleteAnswer(idxQuestion, idxAnswer)"
-        type="button"
-      >
-        Supprimer
-      </button>
+<div class="container-fluid mt-4" *ngIf="quiz()">
+  <div class="row">
+    <!-- Sidebar: Liste des questions -->
+    <div class="col-md-3 quiz-sidebar">
+      <h5 class="mb-3">
+        <i class="fas fa-list me-2"></i>
+        Questions
+      </h5>
+      
+      <!-- Progress bar -->
+      <div class="question-progress">
+        <div 
+          class="question-progress-bar" 
+          [style.width.%]="((selectedQuestionIdx() + 1) / questions().length) * 100">
+        </div>
+      </div>
+      
+      <ul class="question-list">
+        <li
+          *ngFor="let q of questions(); let i = index"
+          [class.active]="i === selectedQuestionIdx()"
+          (click)="selectQuestion(i)"
+          class="question-item"
+        >
+          <div class="d-flex justify-content-between align-items-center">
+            <span>{{ i + 1 }}. {{ q.type === 'coding' ? 'Coding' : (q.type === 'qcm' ? 'QCM' : 'Fill Blank') }}</span>
+            <i class="fas fa-check-circle text-success" *ngIf="getQuizAnswer(q.id) || getQuizCode(q.id)"></i>
+          </div>
+          <small class="text-muted">{{ q.difficulty }}</small>
+        </li>
+      </ul>
     </div>
-    <button
-      class="btn btn-outline-primary btn-sm mt-2"
-      (click)="addAnswer(idxQuestion)"
-      type="button"
-    >
-      Ajouter option
-    </button>
+
+    <!-- Main: Question courante -->
+    <div class="col-md-9 quiz-main">
+      <div *ngIf="!quizFinished() && currentQuestion() as question" class="quiz-content">
+        <!-- Question Header -->
+        <div class="question-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4>Question {{ selectedQuestionIdx() + 1 }} of {{ questions().length }}</h4>
+            <div class="d-flex gap-2">
+              <span class="badge bg-primary">{{ question.type }}</span>
+              <span class="badge bg-info">{{ question.difficulty }}</span>
+              <span class="badge bg-success">{{ question.language }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Content -->
+        <div class="question-content">
+          <div class="mb-3">
+            <strong>{{ question.text }}</strong>
+          </div>
+
+          <!-- QCM Questions -->
+          <div *ngIf="question.type === 'qcm'">
+            <div *ngFor="let ans of question.answers" class="answer-option">
+              <label class="d-flex align-items-center w-100">
+                <input
+                  type="radio"
+                  [name]="'question_' + question.id"
+                  [value]="ans.id"
+                  [checked]="getQuizAnswer(question.id) === ans.id"
+                  (change)="updateQuizAnswer(question.id, ans.id)"
+                />
+                <span>{{ ans.option }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Fill in the Blank Questions -->
+          <div *ngIf="question.type === 'fill-in-the-blank'">
+            <div class="mb-3">
+              <input
+                class="form-control form-control-lg"
+                [value]="getQuizAnswer(question.id)"
+                (input)="updateQuizAnswer(question.id, $event)"
+                placeholder="Enter your answer here..."
+              />
+            </div>
+          </div>
+
+          <!-- Coding Questions -->
+          <div *ngIf="question.type === 'coding'">
+            <div class="row">
+              <div class="col-md-7">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="fas fa-code me-2"></i>
+                    Code Template
+                  </label>
+                  <pre class="code-template">{{ getCodeTemplate(question.id) }}</pre>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="fas fa-edit me-2"></i>
+                    Your Solution
+                  </label>
+                  <textarea
+                    class="form-control code-editor"
+                    [value]="getQuizCode(question.id)"
+                    (input)="updateQuizCode(question.id, $event)"
+                    rows="15"
+                    placeholder="Write your code here..."
+                  ></textarea>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="fas fa-terminal me-2"></i>
+                    Custom Input (stdin)
+                  </label>
+                  <textarea
+                    class="form-control"
+                    [value]="getQuizInput(question.id)"
+                    (input)="updateQuizInput(question.id, $event)"
+                    rows="3"
+                    placeholder="Enter test input here..."
+                  ></textarea>
+                </div>
+                
+                <button
+                  class="btn btn-test-code me-2"
+                  type="button"
+                  (click)="testCode(question.id)"
+                  [disabled]="!getQuizCode(question.id)"
+                >
+                  <i class="fas fa-play me-2"></i>
+                  Run Code
+                </button>
+              </div>
+              
+              <div class="col-md-5">
+                <div class="test-cases">
+                  <h6>
+                    <i class="fas fa-vials me-2"></i>
+                    Test Cases
+                  </h6>
+                  <div *ngFor="let tc of question.testCases; let i = index" class="test-case">
+                    <strong>Test {{ i + 1 }}</strong><br>
+                    <small>Input: <code>{{ tc.input }}</code></small><br>
+                    <small>Expected: <code>{{ tc.expectedOutput }}</code></small>
+                  </div>
+                </div>
+                
+                <div *ngIf="getQuizCodeResult(question.id)" class="test-result">
+                  <h6>
+                    <i class="fas fa-flask me-2"></i>
+                    Execution Result
+                  </h6>
+                  <pre>{{ getQuizCodeResult(question.id) | json }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="quiz-actions">
+          <div class="d-flex justify-content-between align-items-center">
+            <button 
+              class="btn btn-outline-secondary"
+              type="button"
+              (click)="selectQuestion(selectedQuestionIdx() - 1)"
+              [disabled]="selectedQuestionIdx() === 0"
+            >
+              <i class="fas fa-chevron-left me-2"></i>
+              Previous
+            </button>
+            
+            <div class="d-flex gap-2">
+              <button 
+                class="btn btn-outline-primary"
+                type="button"
+                (click)="selectQuestion(selectedQuestionIdx() + 1)"
+                [disabled]="selectedQuestionIdx() >= questions().length - 1"
+              >
+                Next
+                <i class="fas fa-chevron-right ms-2"></i>
+              </button>
+              
+              <button 
+                class="btn btn-finish-quiz"
+                type="button"
+                (click)="finishQuiz()"
+              >
+                <i class="fas fa-flag-checkered me-2"></i>
+                Finish Quiz
+              </button>
+            </div>
+            
+            <button 
+              class="btn btn-outline-danger"
+              type="button"
+              (click)="backToList()"
+            >
+              <i class="fas fa-times me-2"></i>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Finished -->
+      <div *ngIf="quizFinished()" class="quiz-finished">
+        <div class="mb-4">
+          <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
+          <h3>Quiz Completed!</h3>
+          <p class="lead">Congratulations on completing the quiz!</p>
+        </div>
+        
+        <div class="score">
+          {{ quizScore() }}%
+        </div>
+        
+        <div class="mt-4">
+          <button 
+            class="btn btn-primary btn-lg me-3"
+            (click)="backToList()"
+          >
+            <i class="fas fa-list me-2"></i>
+            Back to Quiz List
+          </button>
+          
+          <button 
+            class="btn btn-success btn-lg"
+            (click)="quizFinished.set(false); selectedQuestionIdx.set(0)"
+          >
+            <i class="fas fa-redo me-2"></i>
+            Review Answers
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <!-- Complétion -->
-  <div *ngIf="question.type === 'fill-in-the-blank'">
-    <textarea
-      class="form-control mb-2"
-      [(ngModel)]="question.text"
-      placeholder="Ex: Java est un {blank}"
-    ></textarea>
-    <input
-      class="form-control"
-      [(ngModel)]="question.expectedAnswer"
-      placeholder="Réponse attendue"
-    />
-  </div>
-
-  <button
-    class="btn btn-outline-danger btn-sm mt-2"
-    (click)="deleteQuestion(idxQuestion)"
-    type="button"
-  >
-    Supprimer question
-  </button>
-</div>
-
-<div class="mt-3">
-  <button class="btn btn-sm btn-success" (click)="addQuestion()">
-    Add Question
-  </button>
 </div>

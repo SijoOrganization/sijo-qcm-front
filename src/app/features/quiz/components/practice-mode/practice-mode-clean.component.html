@@ -1,0 +1,250 @@
+<div class="practice-mode-container">
+  <div class="container-fluid">
+    <!-- Header -->
+    <div class="practice-header">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="practice-title">
+            <i class="fas fa-dumbbell me-3"></i>
+            Practice Mode
+          </h1>
+          <p class="practice-subtitle">Sharpen your coding skills with unlimited practice</p>
+        </div>
+        <div class="practice-stats-mini">
+          <div class="stat-item">
+            <i class="fas fa-chart-line me-2"></i>
+            <span>{{ successRate() }}% Success</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-fire me-2"></i>
+            <span>{{ practiceStats().currentStreak }} Streak</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Practice Settings -->
+    <div *ngIf="showSettings()" class="practice-settings">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card settings-card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-cog me-2"></i>
+                Practice Settings
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Programming Language</label>
+                    <select 
+                      class="form-select"
+                      [value]="practiceConfig().language"
+                      (change)="updatePracticeConfig('language', ($event.target as HTMLSelectElement).value)"
+                    >
+                      <option *ngFor="let lang of availableLanguages" [value]="lang">
+                        {{ lang }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Difficulty Level</label>
+                    <select 
+                      class="form-select"
+                      [value]="practiceConfig().difficulty"
+                      (change)="updatePracticeConfig('difficulty', ($event.target as HTMLSelectElement).value)"
+                    >
+                      <option *ngFor="let diff of availableDifficulties" [value]="diff">
+                        {{ diff | titlecase }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Question Type</label>
+                    <select 
+                      class="form-select"
+                      [value]="practiceConfig().questionType"
+                      (change)="updatePracticeConfig('questionType', ($event.target as HTMLSelectElement).value)"
+                    >
+                      <option *ngFor="let type of availableQuestionTypes" [value]="type.value">
+                        {{ type.label }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Number of Questions</label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      min="1"
+                      max="50"
+                      [value]="practiceConfig().questionCount"
+                      (input)="updatePracticeConfig('questionCount', +($event.target as HTMLInputElement).value)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <div class="form-check mb-2">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="validatedOnly"
+                      [checked]="practiceConfig().validatedOnly"
+                      (change)="updatePracticeConfig('validatedOnly', ($event.target as HTMLInputElement).checked)"
+                    />
+                    <label class="form-check-label" for="validatedOnly">
+                      Only validated questions
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="randomOrder"
+                      [checked]="practiceConfig().randomOrder"
+                      (change)="updatePracticeConfig('randomOrder', ($event.target as HTMLInputElement).checked)"
+                    />
+                    <label class="form-check-label" for="randomOrder">
+                      Random order
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>Available Questions: {{ filteredQuestions().length }}</strong>
+                  </div>
+                  <div>
+                    <button class="btn btn-secondary me-2" (click)="backToQuizList()">
+                      <i class="fas fa-arrow-left me-2"></i>
+                      Back to Quiz List
+                    </button>
+                    <button 
+                      class="btn btn-primary" 
+                      (click)="startPractice()"
+                      [disabled]="filteredQuestions().length === 0"
+                    >
+                      <i class="fas fa-play me-2"></i>
+                      Start Practice
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Practice Question -->
+    <div *ngIf="showQuestion()" class="practice-question">
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="card question-card">
+            <div class="card-header">
+              <div class="d-flex justify-content-between align-items-center">
+                <h4>
+                  Question {{ currentQuestionIndex() + 1 }} of {{ practiceQuestions().length }}
+                </h4>
+                <div class="question-progress">
+                  <div class="progress" style="width: 200px;">
+                    <div 
+                      class="progress-bar" 
+                      [style.width.%]="((currentQuestionIndex() + 1) / practiceQuestions().length) * 100"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card-body" *ngIf="currentQuestion()">
+              <div class="question-content">
+                <h5>{{ currentQuestion()?.text }}</h5>
+                
+                <!-- QCM Question -->
+                <div *ngIf="currentQuestion()?.type === 'qcm'" class="qcm-question mt-3">
+                  <div class="form-check" *ngFor="let answer of currentQuestion()?.answers">
+                    <input 
+                      class="form-check-input" 
+                      type="radio" 
+                      [name]="'question_' + currentQuestion()?.id"
+                      [id]="answer.id"
+                      [value]="answer.id"
+                      (change)="submitAnswer(answer.id)"
+                    />
+                    <label class="form-check-label" [for]="answer.id">
+                      {{ answer.option }}
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Fill in the Blank Question -->
+                <div *ngIf="currentQuestion()?.type === 'fill-in-the-blank'" class="fill-question mt-3">
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="Enter your answer"
+                    (blur)="submitAnswer(($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+
+                <!-- Coding Question -->
+                <div *ngIf="currentQuestion()?.type === 'coding'" class="coding-question mt-3">
+                  <pre class="code-block">{{ currentQuestion()?.code }}</pre>
+                  <textarea 
+                    class="form-control mt-3" 
+                    rows="10" 
+                    placeholder="Write your solution here..."
+                    (blur)="submitAnswer(($event.target as HTMLTextAreaElement).value)"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card-footer">
+              <div class="d-flex justify-content-between">
+                <button 
+                  class="btn btn-outline-secondary" 
+                  (click)="previousQuestion()"
+                  [disabled]="currentQuestionIndex() === 0"
+                >
+                  <i class="fas fa-arrow-left me-2"></i>
+                  Previous
+                </button>
+                
+                <button class="btn btn-warning" (click)="resetPractice()">
+                  <i class="fas fa-stop me-2"></i>
+                  Stop Practice
+                </button>
+                
+                <button 
+                  class="btn btn-primary" 
+                  (click)="nextQuestion()"
+                >
+                  <i class="fas fa-arrow-right me-2"></i>
+                  {{ currentQuestionIndex() === practiceQuestions().length - 1 ? 'Finish' : 'Next' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,143 @@
+<div class="container mt-4">
+  <h2>Créer une question</h2>
+  <form (ngSubmit)="editIndex === null ? addQuestion() : updateQuestion()" class="mb-4">
+    <div class="mb-2">
+      <label>Type</label>
+      <select class="form-control" [(ngModel)]="newQuestionType" name="type" required>
+        <option value="qcm">QCM</option>
+        <option value="fill-in-the-blank">Complétion</option>
+        <option value="coding">Coding</option>
+      </select>
+    </div>
+    <div *ngIf="newQuestionType === 'qcm'">
+      <input class="form-control mb-2" [(ngModel)]="newQcm.text" name="qcmText" placeholder="Énoncé QCM" required>
+      <input class="form-control mb-2" [(ngModel)]="newQcm.language" name="qcmLang" placeholder="Langage" required>
+      <select class="form-control mb-2" [(ngModel)]="newQcm.difficulty" name="qcmDiff">
+        <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+      </select>
+      <label><input type="checkbox" [(ngModel)]="newQcm.validity" name="qcmValid"> Valide</label>
+      <div *ngFor="let answer of newQcm.answers; let i = index" class="d-flex align-items-center mb-2">
+        <input class="form-control me-2" [(ngModel)]="answer.option" name="qcmOpt{{i}}" placeholder="Option" required>
+        <input type="checkbox" [(ngModel)]="answer.isCorrect" name="qcmCorr{{i}}"> Correct
+        <button type="button" class="btn btn-danger btn-sm ms-2" (click)="removeQcmAnswer(i)">Supprimer</button>
+      </div>
+      <button type="button" class="btn btn-outline-primary btn-sm" (click)="addQcmAnswer()">Ajouter option</button>
+    </div>
+    <div *ngIf="newQuestionType === 'fill-in-the-blank'">
+      <input class="form-control mb-2" [(ngModel)]="newFill.text" name="fillText" placeholder="Énoncé" required>
+      <input class="form-control mb-2" [(ngModel)]="newFill.language" name="fillLang" placeholder="Langage" required>
+      <select class="form-control mb-2" [(ngModel)]="newFill.difficulty" name="fillDiff">
+        <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+      </select>
+      <label><input type="checkbox" [(ngModel)]="newFill.validity" name="fillValid"> Valide</label>
+      <input class="form-control mb-2" [(ngModel)]="newFill.expectedAnswer" name="fillAns" placeholder="Réponse attendue" required>
+    </div>
+    <div *ngIf="newQuestionType === 'coding'">
+      <input class="form-control mb-2" [(ngModel)]="newCoding.text" name="codingText" placeholder="Énoncé" required>
+      <input class="form-control mb-2" [(ngModel)]="newCoding.language" name="codingLang" placeholder="Langage" required>
+      <select class="form-control mb-2" [(ngModel)]="newCoding.difficulty" name="codingDiff">
+        <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+      </select>
+      <label><input type="checkbox" [(ngModel)]="newCoding.validity" name="codingValid"> Valide</label>
+      <textarea class="form-control mb-2" [(ngModel)]="newCoding.code" name="codingCode" placeholder="Code template"></textarea>
+      <div *ngFor="let tc of newCoding.testCases; let i = index" class="mb-2">
+        <input class="form-control mb-1" [(ngModel)]="tc.input" name="codingInput{{i}}" placeholder="Input" required>
+        <input class="form-control mb-1" [(ngModel)]="tc.expectedOutput" name="codingOutput{{i}}" placeholder="Expected Output" required>
+        <button type="button" class="btn btn-danger btn-sm" (click)="removeCodingTestCase(i)">Supprimer</button>
+      </div>
+      <button type="button" class="btn btn-outline-primary btn-sm" (click)="addCodingTestCase()">Ajouter test case</button>
+    </div>
+    <button type="submit" class="btn btn-success mt-3">{{ editIndex === null ? 'Ajouter' : 'Mettre à jour' }} la question</button>
+    <button type="button" class="btn btn-secondary mt-3 ms-2" (click)="resetForm()">Reset</button>
+  </form>
+
+  <h3>Questions</h3>
+  <div class="row">
+    <div class="col-md-4 mb-3" *ngFor="let question of questions; let i = index">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{{ question.text }}</h5>
+          <p class="card-text">
+            Type: {{ question.type }}<br>
+            Langage: {{ question.language }}<br>
+            Difficulté: {{ question.difficulty }}<br>
+            Valide: {{ question.validity ? 'oui' : 'non' }}
+          </p>
+          <div *ngIf="question.type === 'qcm'">
+            <ul>
+              <li *ngFor="let ans of question.answers">{{ ans.option }} <span *ngIf="ans.isCorrect">(✔)</span></li>
+            </ul>
+          </div>
+          <div *ngIf="question.type === 'fill-in-the-blank'">
+            <strong>Réponse attendue:</strong> {{ question.expectedAnswer }}
+          </div>
+          <div *ngIf="question.type === 'coding'">
+            <strong>Code:</strong>
+            <pre>{{ question.code }}</pre>
+            <strong>Test cases:</strong>
+            <ul>
+              <li *ngFor="let tc of question.testCases">Input: {{ tc.input }} | Output: {{ tc.expectedOutput }}</li>
+            </ul>
+          </div>
+          <button class="btn btn-warning btn-sm me-2" (click)="editQuestion(i)">Modifier</button>
+          <button class="btn btn-danger btn-sm" (click)="deleteQuestion(i)">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Générer un quiz aléatoire</h3>
+  <form (ngSubmit)="generateQuiz()" class="mb-4">
+    <input class="form-control mb-2" [(ngModel)]="quizGen.title" name="quizTitle" placeholder="Titre du quiz" required>
+    <input class="form-control mb-2" [(ngModel)]="quizGen.language" name="quizLang" placeholder="Langage" required>
+    <select class="form-control mb-2" [(ngModel)]="quizGen.difficulty" name="quizDiff">
+      <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+    </select>
+    <input class="form-control mb-2" type="number" [(ngModel)]="quizGen.nbQuestions" name="quizNbQuestions" placeholder="Nombre total de questions" required>
+    <button type="submit" class="btn btn-primary">Générer quiz</button>
+  </form>
+
+  <h3>Quiz générés</h3>
+  <ul class="list-group">
+    <li class="list-group-item" *ngFor="let quiz of quizzes; let i = index">
+      <strong>{{ quiz.title }}</strong> ({{ quiz.language }}, {{ quiz.difficulty }}) - {{ quiz.questions.length || 0 }} questions
+      <button class="btn btn-primary btn-sm ms-2" [routerLink]="['/quiz-space/take', quiz.id]">Start</button>
+      <button class="btn btn-danger btn-sm ms-2" (click)="deleteQuiz(i)">Supprimer</button>
+    </li>
+  </ul>
+
+  <!-- Quiz taking modal/zone -->
+  <div *ngIf="currentQuiz">
+    <!-- Quiz taking zone (scrollable, toutes questions affichées) -->
+    <div *ngIf="currentQuiz && !quizFinished" class="mt-4">
+      <h3>{{ currentQuiz.title }}</h3>
+      <form (ngSubmit)="finishQuiz()">
+        <div *ngFor="let q of currentQuiz.questions; let idx = index" class="mb-4">
+          <div class="mb-2"><strong>Question {{ idx + 1 }}:</strong> {{ q.text }}</div>
+          <div *ngIf="q.type === 'qcm'">
+            <div *ngFor="let ans of q.answers">
+              <label>
+                <input type="radio" [name]="q.id" [value]="ans.id" [(ngModel)]="quizAnswers[q.id]" />
+                {{ ans.option }}
+              </label>
+            </div>
+          </div>
+          <div *ngIf="q.type === 'fill-in-the-blank'">
+            <input class="form-control" [(ngModel)]="quizAnswers[q.id]" placeholder="Votre réponse" />
+          </div>
+          <div *ngIf="q.type === 'coding'">
+            <textarea class="form-control" [(ngModel)]="quizCode[q.id]" rows="6" placeholder="Votre code ici"></textarea>
+            <!-- Optionnel : bouton de test -->
+          </div>
+        </div>
+        <button class="btn btn-success" type="submit">Terminer le quiz</button>
+        <button class="btn btn-secondary ms-2" type="button" (click)="currentQuiz = null">Annuler</button>
+      </form>
+    </div>
+    <div *ngIf="quizFinished" class="mt-4">
+      <h3>Quiz terminé !</h3>
+      <p>Score : {{ quizScore }}%</p>
+      <button class="btn btn-secondary" (click)="currentQuiz = null; quizFinished = false;">Fermer</button>
+    </div>
+  </div>
+</div>

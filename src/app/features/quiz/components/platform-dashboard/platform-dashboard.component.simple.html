@@ -1,0 +1,277 @@
+<!-- Simplified Platform Dashboard for testing -->
+<div class="platform-dashboard">
+  <div class="dashboard-header">
+    <h1 class="page-title">Platform Dashboard</h1>
+    <p class="subtitle">Modern coding challenges platform</p>
+  </div>
+
+  <!-- Stats Overview -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div class="stat-number">{{ quizzes().length || 0 }}</div>
+      <div class="stat-label">Total Challenges</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-number">{{ getAiGeneratedCount() }}</div>
+      <div class="stat-label">AI Generated</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-number">{{ getValidatedCount() }}</div>
+      <div class="stat-label">Validated</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-number">{{ getUsersCount() }}</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'challenges'"
+      (click)="setActiveTab('challenges')">
+      <i class="fas fa-code"></i>
+      Challenges
+    </button>
+    
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'ai-generator'"
+      (click)="setActiveTab('ai-generator')">
+      <i class="fas fa-robot"></i>
+      AI Generator
+    </button>
+    
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'leaderboard'"
+      (click)="setActiveTab('leaderboard')">
+      <i class="fas fa-trophy"></i>
+      Leaderboard
+    </button>
+  </div>
+
+  <!-- Content Sections -->
+  <div class="content-wrapper">
+    
+    <!-- Challenges Tab -->
+    <div *ngIf="activeTab() === 'challenges'" class="content-section">
+      <div class="section-header">
+        <h2>Available Challenges</h2>
+        <div class="actions">
+          <button class="btn btn-outline-primary" (click)="refreshQuizzes()">
+            <i class="fas fa-sync"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Quiz Grid -->
+      <div class="challenges-grid">
+        <div *ngFor="let quiz of filteredQuizzes()" class="challenge-card">
+          <div class="challenge-header">
+            <h3 class="challenge-title">{{ quiz.title }}</h3>
+            <div class="challenge-badges">
+              <span class="difficulty-badge" [class]="getDifficultyClass(quiz.difficulty)">
+                {{ quiz.difficulty || 'Medium' }}
+              </span>
+              <span *ngIf="isAiGenerated(quiz)" class="ai-badge">
+                <i class="fas fa-robot"></i>AI
+              </span>
+              <span *ngIf="quiz.isValidated" class="validated-badge">
+                <i class="fas fa-check-circle"></i>Validated
+              </span>
+            </div>
+          </div>
+
+          <div class="challenge-content">
+            <p class="challenge-description">
+              {{ quiz.explanation | slice:0:120 }}
+              <span *ngIf="quiz.explanation && quiz.explanation.length > 120">...</span>
+            </p>
+
+            <div class="challenge-meta">
+              <div class="meta-item">
+                <i class="fas fa-question-circle"></i>
+                <span>{{ quiz.questions?.length || 0 }} Questions</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-clock"></i>
+                <span>{{ getEstimatedTime(quiz) }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-code"></i>
+                <span>{{ getCodingQuestionCount(quiz) }} Coding</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-tag"></i>
+                <span>{{ quiz.category }}</span>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="challenge-tags" *ngIf="getQuizTags(quiz).length > 0">
+              <span class="tag" *ngFor="let tag of getQuizTags(quiz).slice(0, 3)">
+                {{ tag }}
+              </span>
+              <span *ngIf="getQuizTags(quiz).length > 3" class="tag tag-more">
+                +{{ getQuizTags(quiz).length - 3 }}
+              </span>
+            </div>
+          </div>
+
+          <div class="challenge-actions">
+            <button class="btn btn-primary btn-sm" (click)="startQuiz(quiz)">
+              <i class="fas fa-play"></i>
+              Start Challenge
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" (click)="editQuiz(quiz)">
+              <i class="fas fa-edit"></i>
+              Edit
+            </button>
+            <button class="btn btn-outline-danger btn-sm" (click)="deleteQuiz(quiz)">
+              <i class="fas fa-trash"></i>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredQuizzes().length === 0" class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3>No challenges available</h3>
+        <p>Get started by creating your first challenge with our AI generator!</p>
+        <button class="btn btn-link p-0" (click)="setActiveTab('ai-generator')">
+          Try AI Generator →
+        </button>
+      </div>
+    </div>
+
+    <!-- AI Generator Tab -->
+    <div *ngIf="activeTab() === 'ai-generator'" class="content-section">
+      <div class="section-header">
+        <h2><i class="fas fa-robot"></i> AI Quiz Generator</h2>
+        <p>Generate custom coding challenges using artificial intelligence</p>
+      </div>
+
+      <div class="ai-generator-form">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Topics</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="e.g., algorithms, data structures, sorting"
+              [value]="aiGeneratorForm().topics"
+              (input)="updateTopics($event)">
+            <div class="form-text">Separate multiple topics with commas</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Programming Language</label>
+            <select 
+              class="form-select"
+              [value]="aiGeneratorForm().language"
+              (change)="updateLanguage($event)">
+              <option value="Java">Java</option>
+              <option value="Python">Python</option>
+              <option value="JavaScript">JavaScript</option>
+              <option value="TypeScript">TypeScript</option>
+              <option value="C++">C++</option>
+              <option value="Go">Go</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Number of Questions</label>
+            <select 
+              class="form-select"
+              [value]="aiGeneratorForm().numberOfQuestions"
+              (change)="updateNumberOfQuestions($event)">
+              <option value="3">3 Questions</option>
+              <option value="5">5 Questions</option>
+              <option value="10">10 Questions</option>
+              <option value="15">15 Questions</option>
+              <option value="20">20 Questions</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Difficulty Level</label>
+            <select 
+              class="form-select"
+              [value]="aiGeneratorForm().difficulty"
+              (change)="updateDifficulty($event)">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-check mt-4">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                id="includeCode"
+                [checked]="aiGeneratorForm().includeCode"
+                (change)="updateIncludeCode($event)">
+              <label class="form-check-label" for="includeCode">
+                Include coding challenges
+              </label>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <button 
+              class="btn btn-primary btn-lg"
+              [disabled]="isGenerating() || !aiGeneratorForm().topics"
+              (click)="generateAIQuiz()">
+              <span *ngIf="!isGenerating()">
+                <i class="fas fa-magic"></i>
+                Generate Quiz
+              </span>
+              <span *ngIf="isGenerating()">
+                <i class="fas fa-spinner fa-spin"></i>
+                Generating...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard Tab -->
+    <div *ngIf="activeTab() === 'leaderboard'" class="content-section">
+      <div class="section-header">
+        <h2><i class="fas fa-trophy"></i> Leaderboard</h2>
+        <p>Top performers on our platform</p>
+      </div>
+
+      <div class="leaderboard">
+        <div class="leaderboard-item" *ngFor="let user of mockLeaderboard; let i = index">
+          <div class="rank">{{ i + 1 }}</div>
+          <div class="avatar">
+            <img [src]="user.avatar" [alt]="user.name">
+          </div>
+          <div class="user-info">
+            <div class="name">{{ user.name }}</div>
+            <div class="stats">{{ user.challenges }} challenges • {{ user.points }} points</div>
+          </div>
+          <div class="score">{{ user.score }}%</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,24 +1,218 @@
-<div
-  class="d-flex justify-content-center align-items-center container flex-column gap-3"
->
-  @let quiz = quizSignal();
-  @if (quiz) {
-    <h5 class="mb-1">{{ quiz.title }}</h5>
-    <p class="mb-0 text-muted">Category: {{ quiz.category }}</p>
-    <p>{{ quiz.explanation }}</p>
-
-    <button class="btn btn-lg btn-primary" (click)="start()">
-      TAKE THIS TEST
-    </button>
-    <div class="mt-5 w-75 text-center">
-      @if (submissions.length > 0) {
-        <div>
-          <h4>Submission history</h4>
-          <app-quiz-history [submissions]="submissions"></app-quiz-history>
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      @if (isLoading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3">Loading quiz details...</p>
         </div>
-      } @else {
-        <h5 class="text-muted">You've never taken this quiz</h5>
+      }
+
+      @if (error()) {
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          {{ error() }}
+        </div>
+      }
+
+      @if (quiz() && !isLoading()) {
+        <!-- Quiz Header -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h2 class="mb-2">{{ quiz()!.title }}</h2>
+                <p class="text-muted mb-0">{{ quiz()!.explanation }}</p>
+              </div>
+              <div class="text-end">
+                <span class="badge bg-{{ getDifficultyColor(quiz()!.difficulty) }} me-2">
+                  <i [class]="getDifficultyIcon(quiz()!.difficulty)" class="me-1"></i>
+                  {{ quiz()!.difficulty | titlecase }}
+                </span>
+                @if (quiz()!.isValidated) {
+                  <span class="badge bg-success">
+                    <i class="fas fa-check-circle me-1"></i>
+                    Validated
+                  </span>
+                } @else {
+                  <span class="badge bg-warning">
+                    <i class="fas fa-clock me-1"></i>
+                    Pending Validation
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3">
+                <div class="stat-item">
+                  <i class="fas fa-question-circle text-primary me-2"></i>
+                  <strong>{{ quiz()!.questions.length || 0 }}</strong> Questions
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-item">
+                  <i class="fas fa-clock text-info me-2"></i>
+                  <strong>{{ quiz()!.estimatedTime || 30 }}</strong> Minutes
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-item">
+                  <i class="fas fa-tag text-success me-2"></i>
+                  <strong>{{ quiz()!.category }}</strong>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-item">
+                  <i class="fas fa-user text-warning me-2"></i>
+                  @if (quiz()!.validatedBy) {
+                    <strong>{{ quiz()!.validatedBy }}</strong>
+                  } @else {
+                    <strong>Not Validated</strong>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card mb-4">
+          <div class="card-body text-center">
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+              @if (quiz()!.isValidated) {
+                <button class="btn btn-primary btn-lg" (click)="startQuiz()">
+                  <i class="fas fa-play me-2"></i>
+                  Take Quiz
+                </button>
+                <button class="btn btn-outline-primary" (click)="practiceQuiz()">
+                  <i class="fas fa-dumbbell me-2"></i>
+                  Practice Mode
+                </button>
+              }
+              <button class="btn btn-outline-secondary" (click)="editQuiz()">
+                <i class="fas fa-edit me-2"></i>
+                Edit Quiz
+              </button>
+              <button class="btn btn-outline-info" routerLink="/quizzes">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Quizzes
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Questions Preview -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="fas fa-list me-2"></i>
+              Questions Overview
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="accordion" id="questionsAccordion">
+              @for (question of quiz()!.questions; track question.id; let i = $index) {
+                <div class="accordion-item">
+                  <h2 class="accordion-header" [id]="'heading' + i">
+                    <button class="accordion-button collapsed" 
+                            type="button" 
+                            data-bs-toggle="collapse" 
+                            [attr.data-bs-target]="'#collapse' + i"
+                            [attr.aria-expanded]="false"
+                            [attr.aria-controls]="'collapse' + i">
+                      <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                        <span>
+                          <i [class]="getQuestionTypeIcon(question.type)" class="me-2"></i>
+                          Question {{ i + 1 }}: {{ getQuestionTypeName(question.type) }}
+                        </span>
+                        <span class="badge bg-{{ getDifficultyColor(question.difficulty) }}">
+                          {{ question.difficulty }}
+                        </span>
+                      </div>
+                    </button>
+                  </h2>
+                  <div [id]="'collapse' + i" 
+                       class="accordion-collapse collapse" 
+                       [attr.aria-labelledby]="'heading' + i"
+                       data-bs-parent="#questionsAccordion">
+                    <div class="accordion-body">
+                      <div class="question-preview">
+                        <h6>{{ question.text }}</h6>
+                        
+                        @if (question.description) {
+                          <p class="text-muted">{{ question.description }}</p>
+                        }
+                        
+                        @if (question.code) {
+                          <div class="code-preview">
+                            <pre><code>{{ question.code }}</code></pre>
+                          </div>
+                        }
+                        
+                        @if (question.type === 'qcm' && question.answers) {
+                          <div class="mt-3">
+                            <h6>Options:</h6>
+                            <ul class="list-group">
+                              @for (answer of question.answers; track answer.id) {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                  {{ answer.option }}
+                                  @if (answer.isCorrect) {
+                                    <span class="badge bg-success">Correct</span>
+                                  }
+                                </li>
+                              }
+                            </ul>
+                          </div>
+                        }
+                        
+                        @if (question.type === 'fill-in-the-blank' && question.expectedAnswer) {
+                          <div class="mt-3">
+                            <h6>Expected Answer:</h6>
+                            <code>{{ question.expectedAnswer }}</code>
+                          </div>
+                        }
+                        
+                        <div class="mt-3">
+                          <small class="text-muted">
+                            <i class="fas fa-code me-1"></i>
+                            Language: {{ question.language }}
+                            @if (question.tags && question.tags.length > 0) {
+                              <span class="ms-3">
+                                <i class="fas fa-tags me-1"></i>
+                                Tags: {{ question.tags.join(', ') }}
+                              </span>
+                            }
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (submissions.length > 0) {
+          <!-- Submission History -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-history me-2"></i>
+                Submission History
+              </h5>
+            </div>
+            <div class="card-body">
+              <app-quiz-history [submissions]="submissions"></app-quiz-history>
+            </div>
+          </div>
+        }
       }
     </div>
-  }
+  </div>
 </div>

@@ -8,7 +8,7 @@ import { HomeComponent } from './core/layout/home/home.component';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'platform',
     pathMatch: 'full',
   },
   {
@@ -36,6 +36,26 @@ export const routes: Routes = [
     canActivate: [() => !inject(AuthService).isAuthenticated()],
   },
   {
+    path: 'admin',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/admin/components/admin-dashboard/admin-dashboard.component').then(
+            (m) => m.AdminDashboardComponent,
+          ),
+        canActivate: [AuthGuard, TutorGuard],
+      },
+    ],
+  },
+  {
+    path: 'platform',
+    loadComponent: () =>
+      import('./features/quiz/components/platform-dashboard/platform-dashboard.component').then(
+        (m) => m.PlatformDashboardComponent,
+      ),
+  },
+  {
     path: 'quizzes',
     children: [
       {
@@ -51,6 +71,30 @@ export const routes: Routes = [
           import(
             './features/quiz/components/quiz-edit/quiz-edit.component'
           ).then((m) => m.QuizEditComponent),
+        canActivate: [AuthGuard, TutorGuard],
+      },
+      {
+        path: 'ai-generator',
+        loadComponent: () =>
+          import(
+            './features/quiz/components/ai-quiz-generator/ai-quiz-generator.component'
+          ).then((m) => m.AIQuizGeneratorComponent),
+        canActivate: [AuthGuard, TutorGuard],
+      },
+      {
+        path: 'practice',
+        loadComponent: () =>
+          import(
+            './features/quiz/components/practice-mode-new/practice-mode-new.component'
+          ).then((m) => m.PracticeModeComponent),
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'question-bank',
+        loadComponent: () =>
+          import(
+            './features/quiz/components/question-bank/question-bank.component'
+          ).then((m) => m.QuestionBankComponent),
         canActivate: [AuthGuard, TutorGuard],
       },
       {
@@ -127,5 +171,19 @@ export const routes: Routes = [
       },
     ],
     canActivate: [AuthGuard],
+  },
+  {
+    path: 'quiz-space',
+    loadComponent: () =>
+      import('./features/quiz/components/quiz-space/quiz-space.component').then(
+        (m) => m.QuizSpaceComponent,
+      ),
+  },
+  {
+    path: 'quiz-space/take/:id',
+    loadComponent: () =>
+      import(
+        './features/quiz/components/quiz-space-taker/quiz-space-taker.component'
+      ).then((m) => m.QuizSpaceTakerComponent),
   },
 ];

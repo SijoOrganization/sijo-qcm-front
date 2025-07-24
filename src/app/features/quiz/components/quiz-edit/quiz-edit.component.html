@@ -12,6 +12,88 @@
   }
 
   @if (!!quiz()) {
+    <!-- Quiz Metadata Form -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-edit me-2"></i>
+          Quiz Information
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="quizTitle" class="form-label">Quiz Title *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="quizTitle"
+                [(ngModel)]="quiz().title"
+                placeholder="Enter quiz title"
+              />
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="quizDifficulty" class="form-label">Difficulty *</label>
+              <select
+                class="form-select"
+                id="quizDifficulty"
+                [(ngModel)]="quiz().difficulty"
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+                <option value="mixed">Mixed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="quizCategory" class="form-label">Category</label>
+              <input
+                type="text"
+                class="form-control"
+                id="quizCategory"
+                [(ngModel)]="quiz().category"
+                placeholder="e.g., Programming, Web Development"
+              />
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="estimatedTime" class="form-label"
+                >Estimated Time (minutes)</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="estimatedTime"
+                [(ngModel)]="quiz().estimatedTime"
+                min="1"
+                placeholder="30"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="quizExplanation" class="form-label">Description</label>
+          <textarea
+            class="form-control"
+            id="quizExplanation"
+            rows="3"
+            [(ngModel)]="quiz().explanation"
+            placeholder="Brief description of the quiz content..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
     <!-- Nav Tabs -->
     <ul
       ngbNav

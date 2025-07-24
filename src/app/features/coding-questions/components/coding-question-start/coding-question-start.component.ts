@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
@@ -48,19 +50,41 @@ export class CodingQuestionStartComponent implements OnInit {
 
   private route = inject(ActivatedRoute);
   private spinner = inject(SpinnerService);
+  private destroyRef = inject(DestroyRef);
 
-  editorOptions = { language: 'java' };
-  code = '';
-  selectedLanguage = 'java';
+  // Signals pour la gestion de l'état
+  code = signal<string>('');
+  selectedLanguage = signal<string>('java');
+  editorKey = signal<number>(0);
+
+  get editorOptions() {
+    return {
+      language: this.selectedLanguage(),
+      theme: 'vs-dark',
+      minimap: { enabled: false },
+      fontSize: 14,
+      wordWrap: 'on' as const,
+      lineNumbers: 'on' as const,
+      roundedSelection: false,
+      scrollBeyondLastLine: false,
+      automaticLayout: true,
+    };
+  }
 
   ngOnInit(): void {
     const questionId = this.route.snapshot.paramMap.get('id');
     if (questionId) {
       this.codingQuestionsService
         .getCodingQuestion(questionId)
-        .subscribe((question) => {
-          this.codingQuestion.set(question);
-          this.code = this.generateFunctionTemplate(question, this.selectedLanguage);
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (question) => {
+            this.codingQuestion.set(question);
+            this.code.set(this.generateFunctionTemplate(question, this.selectedLanguage()));
+          },
+          error: (error) => {
+            console.error('Error fetching coding question:', error);
+          }
         });
     }
   }
@@ -86,21 +110,32 @@ export class CodingQuestionStartComponent implements OnInit {
         return '// No template available for this language';
     }
   }
-  editorKey=0
   updateCodeTemplate() {
     const question = this.codingQuestion();
     if (question) {
-      this.code = this.generateFunctionTemplate(question, this.selectedLanguage);
-      this.editorKey++;
+      // Génération du nouveau template de code
+      const newCode = this.generateFunctionTemplate(question, this.selectedLanguage());
+      this.code.set(newCode);
+      
+      // Force la recréation de l'éditeur pour éviter les erreurs Monaco
+      this.editorKey.update(key => key + 1);
+    }
   }
-}
+
+  // Méthode pour changer le langage
+  onLanguageChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.selectedLanguage.set(target.value);
+    this.updateCodeTemplate();
+  }
 
   submitSolution() {
     if (this.codingQuestion()) {
       this.spinner.openGlobalSpinner();
       this.codingQuestionsService
-        .submitCodingQuestion(this.codingQuestion()!.id!, this.selectedLanguage, this.code)
+        .submitCodingQuestion(this.codingQuestion()!.id!, this.selectedLanguage(), this.code())
         .pipe(
+          takeUntilDestroyed(this.destroyRef),
           finalize(() => {
             this.spinner.closeGlobalSpinner();
           }),
@@ -113,6 +148,9 @@ export class CodingQuestionStartComponent implements OnInit {
             });
             this.selectSubmission(codingSubmission);
           },
+          error: (error) => {
+            console.error('Error submitting solution:', error);
+          }
         });
     }
   }
@@ -127,9 +165,6 @@ export class CodingQuestionStartComponent implements OnInit {
   }
 
   get monacoOptions() {
-    return {
-      ...this.editorOptions,
-      language: this.selectedLanguage,
-    };
+    return this.editorOptions;
   }
 }

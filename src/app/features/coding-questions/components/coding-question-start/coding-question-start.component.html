@@ -53,8 +53,8 @@
         <div>
           <select
             class="form-select d-inline w-auto"
-            [(ngModel)]="selectedLanguage"
-            (change)="updateCodeTemplate()"
+            [value]="selectedLanguage()"
+            (change)="onLanguageChange($event)"
           >
             <option value="java">Java</option>
             <option value="python">Python</option>
@@ -68,21 +68,23 @@
 
       <!-- Monaco Editor -->
       <div class="overflow-auto h-50">
-        <ngx-monaco-editor
-          [options]="monacoOptions"
-          [(ngModel)]="code"  
-          [ngModelOptions]="{ standalone: true }"
-          [attr.data-key]="editorKey" 
-
-          class="h-100 w-100"
-        >
-        </ngx-monaco-editor>
+        @if (editorKey() >= 0) {
+          <ngx-monaco-editor
+            [options]="monacoOptions"
+            [ngModel]="code()"
+            (ngModelChange)="code.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+            class="h-100 w-100"
+          >
+          </ngx-monaco-editor>
+        }
       </div>
 
       <!-- Input for Test Case & Run Button -->
       <app-code-run
-        [code]="code"
+        [code]="code()"
         [exampleInput]="createExampleInput()"
+        [language]="selectedLanguage()"
       ></app-code-run>
     </div>
   </div>

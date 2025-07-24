@@ -1,42 +1,450 @@
-<div
-  class="d-flex justify-content-center align-items-center container flex-column gap-3"
->
-  <!-- Display List of Available Quizzes -->
-  @if (!!quizzes()) {
-    <h2 class="mb-3">Available Quizzes</h2>
-    <ul class="list-group w-100">
-      @for (quiz of quizzes(); track quiz._id) {
-        <li
-          class="list-group-item d-flex justify-content-between align-items-center p-3"
-        >
-          <div>
-            <h5 class="mb-1">{{ quiz.title }}</h5>
-            <p class="mb-0 text-muted">Category: {{ quiz.category }}</p>
-          </div>
-          <div class="btn-group" role="group">
-            <button
-              class="btn btn-outline-primary btn-sm"
-              [routerLink]="['/quizzes', quiz._id]"
-            >
-              Start
-            </button>
-            @if (hasTutorAcess) {
-              <button
-                class="btn btn-outline-primary btn-sm"
-                [routerLink]="['/quizzes', quiz._id, 'edit']"
-              >
-                Modify
-              </button>
-            }
-          </div>
-        </li>
-      }
-    </ul>
-  }
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-header">
+        <h1 class="page-title">
+          <i class="fas fa-trophy me-3"></i>
+          Quiz & Coding Challenges
+        </h1>
+        <p class="page-subtitle">Test your skills with our comprehensive quiz platform</p>
+        
+        <!-- Test AI Quiz Generation Button -->
+        <div class="alert alert-info">
+          <strong>🧪 Test AI Integration:</strong>
+          <button class="btn btn-sm btn-primary ms-2" (click)="testCompleteAIWorkflow()">
+            <i class="fas fa-flask me-2"></i>
+            Test Complete AI Workflow
+          </button>
+          <button class="btn btn-sm btn-outline-secondary ms-2" (click)="testAIQuizGeneration()">
+            <i class="fas fa-robot me-2"></i>
+            Generate Simple AI Quiz
+          </button>
+          <br>
+          <small class="text-muted">Complete workflow: Generate → Dashboard → Validate → Practice Mode</small>
+          <br>
+          <small class="text-muted">
+            Quick links: 
+            <a [routerLink]="'/admin'" class="text-decoration-none">Admin Dashboard</a> | 
+            <a [routerLink]="'/quizzes/practice'" class="text-decoration-none">Practice Mode</a> |
+            <a [routerLink]="'/quizzes/ai-generator'" class="text-decoration-none">AI Generator</a>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  @if (hasTutorAcess) {
-    <button class="btn btn-success" [routerLink]="['/quizzes/create']">
-      Add new quiz
-    </button>
-  }
+  <div class="row">
+    <!-- Enhanced Random Quiz Generation -->
+    <div class="col-lg-6 mb-4">
+      <div class="card quiz-generator-card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-magic me-2"></i>
+            Enhanced Random Quiz Generator
+          </h5>
+        </div>
+        <div class="card-body">
+          <!-- Topics Selection -->
+          <div class="mb-3">
+            <label class="form-label">Topics</label>
+            <div class="selected-topics mb-2">
+              <span 
+                *ngFor="let topic of generateForm().topics" 
+                class="badge bg-primary topic-badge me-1"
+              >
+                {{ topic }}
+                <button 
+                  type="button" 
+                  class="btn-close btn-close-white ms-1"
+                  (click)="removeTopic(topic)"
+                  style="font-size: 0.7rem;"
+                ></button>
+              </span>
+            </div>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Add a topic..."
+                #topicInput
+                (keyup.enter)="addTopic(topicInput.value); topicInput.value = ''"
+              />
+              <button
+                class="btn btn-outline-primary"
+                type="button"
+                (click)="addTopic(topicInput.value); topicInput.value = ''"
+              >
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="mt-2">
+              <small class="text-muted">Suggestions: </small>
+              <button 
+                *ngFor="let topic of popularTopics.slice(0, 6)"
+                class="btn btn-sm btn-outline-secondary me-1 mb-1"
+                (click)="addTopic(topic)"
+                [disabled]="generateForm().topics.includes(topic)"
+              >
+                {{ topic }}
+              </button>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Programming Language</label>
+                <select
+                  class="form-select"
+                  [(ngModel)]="generateForm().language"
+                  (ngModelChange)="updateGenerateForm('language', $event)"
+                >
+                  <option *ngFor="let lang of availableLanguages" [value]="lang">
+                    {{ lang }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Difficulty Level</label>
+                <select
+                  class="form-select"
+                  [(ngModel)]="generateForm().difficulty"
+                  (ngModelChange)="updateGenerateForm('difficulty', $event)"
+                >
+                  <option *ngFor="let diff of availableDifficulties" [value]="diff">
+                    {{ diff | titlecase }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Total Questions</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="generateForm().questionCount"
+                  (ngModelChange)="updateGenerateForm('questionCount', $event)"
+                  min="1"
+                  max="50"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Coding Questions</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="generateForm().codingQuestionCount"
+                  (ngModelChange)="updateGenerateForm('codingQuestionCount', $event)"
+                  min="0"
+                  [max]="generateForm().questionCount"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <button
+              class="btn btn-generate-quiz btn-lg"
+              (click)="generateRandomQuiz()"
+              [disabled]="isGenerating() || generateForm().topics.length === 0"
+            >
+              <i class="fas fa-cog me-2" [class.fa-spin]="isGenerating()"></i>
+              <span *ngIf="!isGenerating()">Generate Enhanced Quiz</span>
+              <span *ngIf="isGenerating()">Generating...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Quiz Generator -->
+    <div class="col-lg-6 mb-4">
+      <div class="card ai-generator-card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-robot me-2"></i>
+            AI-Powered Quiz Generator
+          </h5>
+        </div>
+        <div class="card-body">
+          <!-- AI Topics Selection -->
+          <div class="mb-3">
+            <label class="form-label">Topics</label>
+            <div class="selected-topics mb-2">
+              <span 
+                *ngFor="let topic of aiGenerateForm().topics" 
+                class="badge bg-success topic-badge me-1"
+              >
+                {{ topic }}
+                <button 
+                  type="button" 
+                  class="btn-close btn-close-white ms-1"
+                  (click)="removeAITopic(topic)"
+                  style="font-size: 0.7rem;"
+                ></button>
+              </span>
+            </div>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Add a topic..."
+                #aiTopicInput
+                (keyup.enter)="addAITopic(aiTopicInput.value); aiTopicInput.value = ''"
+              />
+              <button
+                class="btn btn-outline-success"
+                type="button"
+                (click)="addAITopic(aiTopicInput.value); aiTopicInput.value = ''"
+              >
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Languages Selection -->
+          <div class="mb-3">
+            <label class="form-label">Programming Languages</label>
+            <div class="languages-selection">
+              <div 
+                *ngFor="let language of availableLanguages" 
+                class="form-check form-check-inline"
+              >
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  [checked]="aiGenerateForm().languages.includes(language)"
+                  (change)="toggleAILanguage(language)"
+                  [id]="'ai-lang-' + language"
+                />
+                <label class="form-check-label" [for]="'ai-lang-' + language">
+                  {{ language }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Difficulty</label>
+                <select
+                  class="form-select"
+                  [(ngModel)]="aiGenerateForm().difficulty"
+                  (ngModelChange)="updateAIGenerateForm('difficulty', $event)"
+                >
+                  <option *ngFor="let diff of availableDifficulties" [value]="diff">
+                    {{ diff | titlecase }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Total Questions</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="aiGenerateForm().questionCount"
+                  (ngModelChange)="updateAIGenerateForm('questionCount', $event)"
+                  min="1"
+                  max="50"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <button
+              class="btn btn-ai-generate btn-lg"
+              (click)="generateAIQuiz()"
+              [disabled]="isAIGenerating() || aiGenerateForm().topics.length === 0 || aiGenerateForm().languages.length === 0"
+            >
+              <i class="fas fa-robot me-2" [class.fa-spin]="isAIGenerating()"></i>
+              <span *ngIf="!isAIGenerating()">Generate AI Quiz</span>
+              <span *ngIf="isAIGenerating()">AI Generating...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions Section -->
+  <div class="row">
+    <div class="col-lg-12 mb-4">
+      <div class="card quick-actions-card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-bolt me-2"></i>
+            Quick Actions
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3">
+              <button
+                class="btn btn-outline-primary btn-lg w-100"
+                [routerLink]="['/coding-questions']"
+              >
+                <i class="fas fa-code me-2"></i>
+                Browse Coding Questions
+              </button>
+            </div>
+            
+            <div class="col-md-3">
+              <button
+                class="btn btn-outline-success btn-lg w-100"
+                [routerLink]="['/quizzes/practice']"
+              >
+                <i class="fas fa-play me-2"></i>
+                Practice Mode
+              </button>
+            </div>
+            
+            <div class="col-md-3">
+              <button
+                class="btn btn-outline-info btn-lg w-100"
+                [routerLink]="['/quizzes/ai-generator']"
+              >
+                <i class="fas fa-robot me-2"></i>
+                AI Quiz Generator
+              </button>
+            </div>
+            
+            <div class="col-md-3">
+              <button
+                *ngIf="hasTutorAcess"
+                class="btn btn-outline-warning btn-lg w-100"
+                [routerLink]="['/quizzes/create']"
+              >
+                <i class="fas fa-plus me-2"></i>
+                Create New Quiz
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Quizzes Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card available-quizzes-card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-list me-2"></i>
+            Available Quizzes
+          </h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="quizzes()?.length === 0" class="text-center text-muted py-5">
+            <i class="fas fa-inbox fa-3x mb-3"></i>
+            <p>No quizzes available yet. Create your first quiz!</p>
+          </div>
+          
+          <div class="row" *ngIf="quizzes() && quizzes()!.length > 0">
+            <div class="col-md-6 col-lg-4 mb-4" *ngFor="let quiz of quizzes(); let i = index; trackBy: trackByQuiz">
+              <div class="card quiz-card" *ngIf="quiz && quiz._id">
+                  <div class="card-body">
+                    <div class="quiz-card-header">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <h6 class="card-title">{{ quiz.title || 'Untitled Quiz' }}</h6>
+                        <div class="quiz-status">
+                          <span 
+                            *ngIf="quiz.isValidated" 
+                            class="badge bg-success validation-badge"
+                            title="Expert validated"
+                          >
+                            <i class="fas fa-check-circle"></i>
+                            Validated
+                          </span>
+                          <span 
+                            *ngIf="!quiz.isValidated" 
+                            class="badge bg-warning validation-badge"
+                            title="Pending validation"
+                          >
+                            <i class="fas fa-clock"></i>
+                            Pending
+                          </span>
+                        </div>
+                      </div>
+                      <div class="quiz-badges">
+                        <span class="badge bg-primary">{{ quiz.category }}</span>
+                        <span class="badge bg-info">{{ quiz.questions.length || 0 }} questions</span>
+                        <span *ngIf="quiz.difficulty" class="badge bg-secondary">{{ quiz.difficulty }}</span>
+                        <span *ngIf="quiz.estimatedTime" class="badge bg-dark">{{ quiz.estimatedTime }}min</span>
+                      </div>
+                    </div>
+                    
+                    <p class="card-text text-muted">
+                      {{ quiz.explanation || 'No description available' }}
+                    </p>
+                    
+                    <div class="quiz-stats">
+                      <div class="stat-item">
+                        <i class="fas fa-clock me-1"></i>
+                        <small>Est. {{ quiz.estimatedTime || 30 }} min</small>
+                      </div>
+                      <div class="stat-item">
+                        <i class="fas fa-chart-line me-1"></i>
+                        <small>{{ quiz.difficulty || 'Medium' }}</small>
+                      </div>
+                      <div class="stat-item" *ngIf="quiz.validatedBy">
+                        <i class="fas fa-user-check me-1"></i>
+                        <small>By {{ quiz.validatedBy }}</small>
+                      </div>
+                    </div>
+                    
+                    <div class="quiz-actions">
+                      <button
+                        class="btn btn-start-quiz"
+                        [routerLink]="['/quizzes', quiz._id]"
+                      >
+                        <i class="fas fa-play me-2"></i>
+                        Start Quiz
+                      </button>
+                      
+                      <div class="btn-group" *ngIf="hasTutorAcess">
+                        <button
+                          class="btn btn-outline-secondary btn-sm"
+                          [routerLink]="['/quizzes', quiz._id, 'edit']"
+                          title="Edit quiz"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button
+                          *ngIf="!quiz.isValidated"
+                          class="btn btn-outline-success btn-sm"
+                          (click)="validateQuiz(quiz)"
+                          title="Validate quiz"
+                        >
+                          <i class="fas fa-check"></i>
+                        </button>
+                        <button
+                          class="btn btn-outline-danger btn-sm"
+                          (click)="deleteQuiz(quiz)"
+                          title="Delete quiz"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

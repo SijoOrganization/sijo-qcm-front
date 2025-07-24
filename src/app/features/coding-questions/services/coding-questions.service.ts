@@ -1,5 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   CodeExecution,
   CodeExecutionResult,
@@ -13,15 +14,21 @@ import { Observable, of } from 'rxjs';
 })
 export class CodingQuestionsService {
   private http = inject(HttpClient);
+  private destroyRef = inject(DestroyRef);
   private readonly codingQuestionsSignal = signal<CodingQuestion[]>([]);
   readonly codingQuestions = this.codingQuestionsSignal.asReadonly();
 
   fetchCodingQuestions() {
-    this.http.get<CodingQuestion[]>('/coding-questions').subscribe({
-      next: (codingQuestions) => {
-        this.codingQuestionsSignal.set(codingQuestions);
-      },
-    });
+    this.http.get<CodingQuestion[]>('/coding-questions')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (codingQuestions) => {
+          this.codingQuestionsSignal.set(codingQuestions);
+        },
+        error: (error) => {
+          console.error('Error fetching coding questions:', error);
+        }
+      });
   }
 
   getCodingQuestion(codingQuestionId: string): Observable<CodingQuestion> {

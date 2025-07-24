@@ -17,11 +17,22 @@
         <li class="nav-item">
           <a
             class="nav-link"
+            [routerLink]="'/platform'"
+            routerLinkActive="active"
+            (click)="isMenuCollapsed = true"
+          >
+            <i class="fas fa-rocket me-1"></i>
+            Platform Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
             [routerLink]="'/quizzes'"
             routerLinkActive="active"
             (click)="isMenuCollapsed = true"
           >
-            All quizzes
+            All Quizzes
           </a>
         </li>
         <li class="nav-item">
@@ -34,10 +45,21 @@
             All coding questions
           </a>
         </li>
-
-
+        <li class="nav-item">
+          <a routerLink="/quiz-space">Quiz Space</a>
+        </li>
+        <li class="nav-item" *ngIf="authService.hasTutorAccess()">
+          <a
+            class="nav-link"
+            [routerLink]="'/admin'"
+            routerLinkActive="active"
+            (click)="isMenuCollapsed = true"
+          >
+            <i class="fas fa-cogs me-1"></i>
+            Admin Dashboard
+          </a>
+        </li>
       </ul>
-
     </div>
 
     <div class="btn-group">
