@@ -1,0 +1,34 @@
+name: Build and Deploy Frontend to Azure Container Registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: <your-acr-name>.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # - name: Build and push Docker image
+      #   run: |
+      #     docker build -t <your-acr-name>.azurecr.io/sijo-qcm-front:${{ github.sha }} .
+      #     docker push <your-acr-name>.azurecr.io/sijo-qcm-front:${{ github.sha }}
+
+      # - name: Update Azure Container App
+      #   uses: azure/cli@v2
+      #   with:
+      #     inlineScript: |
+      #       az containerapp update \
+      #         --name <your-container-app-name> \
+      #         --resource-group <your-resource-group> \
+      #         --image <your-acr-name>.azurecr.io/sijo-qcm-front:${{ github.sha }}
