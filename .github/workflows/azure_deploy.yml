@@ -19,10 +19,10 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      # - name: Build and push Docker image
-      #   run: |
-      #     docker build -t <your-acr-name>.azurecr.io/sijo-qcm-front:${{ github.sha }} .
-      #     docker push <your-acr-name>.azurecr.io/sijo-qcm-front:${{ github.sha }}
+      - name: Build and push Docker image
+        run: |
+          docker build -t <your-acr-name>.azurecr.io/sijo-qcm-front:${{ github.sha }} .
+          docker push <your-acr-name>.azurecr.io/sijo-qcm-front:${{ github.sha }}
 
       # - name: Update Azure Container App
       #   uses: azure/cli@v2
