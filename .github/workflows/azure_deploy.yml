@@ -1,5 +1,9 @@
 name: Build and Deploy Frontend to Azure Container Registry
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
   push:
     branches:
