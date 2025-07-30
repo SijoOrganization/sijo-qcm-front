@@ -24,11 +24,11 @@ jobs:
           docker build -t registrysijoqcm.azurecr.io/sijo-qcm-front:${{ github.sha }} .
           docker push registrysijoqcm.azurecr.io/sijo-qcm-front:${{ github.sha }}
 
-      # - name: Update Azure Container App
-      #   uses: azure/cli@v2
-      #   with:
-      #     inlineScript: |
-      #       az containerapp update \
-      #         --name <your-container-app-name> \
-      #         --resource-group sijo-qcm \
-      #         --image registrysijoqcm.azurecr.io/sijo-qcm-front:${{ github.sha }}
+      - name: Update Azure Container App
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az containerapp update \
+              --name sijo-qcm-frontend \
+              --resource-group sijo-qcm \
+              --image registrysijoqcm.azurecr.io/sijo-qcm-front:${{ github.sha }}
