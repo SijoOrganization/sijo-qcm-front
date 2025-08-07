@@ -1,0 +1,171 @@
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--sijo-primary-color, #2c5aa0) 0%, var(--sijo-secondary-color, #1e3d72) 100%);
+}
+
+.card {
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+}
+
+.form-control, .form-select {
+  border-radius: 10px;
+  border: 1px solid #e3e6f0;
+  padding: 12px 15px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--sijo-primary-color, #2c5aa0);
+  box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+}
+
+.form-check-input:checked {
+  background-color: var(--sijo-primary-color, #2c5aa0);
+  border-color: var(--sijo-primary-color, #2c5aa0);
+}
+
+.btn-sijo-primary {
+  background: linear-gradient(45deg, var(--sijo-primary-color, #2c5aa0), var(--sijo-secondary-color, #1e3d72));
+  border: none;
+  border-radius: 10px;
+  padding: 12px 30px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.btn-sijo-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(44, 90, 160, 0.4);
+  background: linear-gradient(45deg, var(--sijo-secondary-color, #1e3d72), var(--sijo-primary-color, #2c5aa0));
+}
+
+.btn-sijo-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-outline-secondary {
+  border-radius: 10px;
+  padding: 12px 30px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.text-sijo-primary {
+  color: var(--sijo-primary-color, #2c5aa0) !important;
+}
+
+.alert-info {
+  background-color: rgba(44, 90, 160, 0.1);
+  border-color: rgba(44, 90, 160, 0.2);
+  color: var(--sijo-primary-color, #2c5aa0);
+  border-radius: 15px;
+}
+
+.form-check {
+  padding-left: 1.8em;
+}
+
+.form-check-input {
+  margin-top: 0.1em;
+  transform: scale(1.1);
+}
+
+.form-check-label {
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #5a5c69;
+  margin-bottom: 8px;
+}
+
+.invalid-feedback {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.form-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+h4 {
+  position: relative;
+  padding-bottom: 10px;
+}
+
+h4::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(45deg, var(--sijo-primary-color, #2c5aa0), var(--sijo-secondary-color, #1e3d72));
+  border-radius: 2px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .card-body {
+    padding: 2rem !important;
+  }
+  
+  h1 {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Focus styles pour l'accessibilité */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus,
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+}
+
+/* Hover sur les checkboxes */
+.form-check:hover .form-check-label {
+  color: var(--sijo-primary-color, #2c5aa0);
+}
+
+.form-check-input:hover {
+  border-color: var(--sijo-primary-color, #2c5aa0);
+}

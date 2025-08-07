@@ -2,7 +2,9 @@ export interface Quiz {
     _id?: string;
     title: string;
     explanation: string;
+    description?: string; // Optional description for the quiz
     category: string;
+    language?: string; // Programming language for the quiz
     questions: Question[];
     isValidated?: boolean; // Expert validation status
     validatedBy?: string; // Expert who validated

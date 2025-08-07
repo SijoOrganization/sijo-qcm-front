@@ -1,0 +1,268 @@
+<div class="modal-backdrop" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4 class="modal-title">
+        <i class="fas fa-eye me-2"></i>
+        Aperçu du Quiz: {{ _quiz()?.title }}
+      </h4>
+      <button type="button" class="btn-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="_quiz()">
+      <!-- Quiz Information -->
+      <div class="quiz-info-section mb-4">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="info-card">
+              <h6><i class="fas fa-info-circle me-2"></i>Informations Générales</h6>
+              <p><strong>Titre:</strong> {{ _quiz()!.title }}</p>
+              <p><strong>Catégorie:</strong> {{ _quiz()!.category }}</p>
+              <p *ngIf="_quiz()!.explanation"><strong>Explication:</strong> {{ _quiz()!.explanation }}</p>
+              <p><strong>Difficulté:</strong> 
+                <span class="badge" 
+                      [class.bg-success]="_quiz()!.difficulty === 'easy'"
+                      [class.bg-warning]="_quiz()!.difficulty === 'medium'"
+                      [class.bg-danger]="_quiz()!.difficulty === 'hard'">
+                  {{ _quiz()!.difficulty }}
+                </span>
+              </p>
+              <p><strong>Durée estimée:</strong> {{ _quiz()!.estimatedTime || 30 }} minutes</p>
+              <p *ngIf="_quiz()!.language"><strong>Langage:</strong> {{ _quiz()!.language }}</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-card">
+              <h6><i class="fas fa-chart-bar me-2"></i>Statistiques</h6>
+              <p><strong>Nombre de questions:</strong> {{ _quiz()!.questions.length || 0 }}</p>
+              <p><strong>Questions de programmation:</strong> {{ codingQuestionsCount() }}</p>
+              <p><strong>Questions théoriques:</strong> {{ theoricalQuestionsCount() }}</p>
+              <p><strong>Status:</strong> 
+                <span class="badge" 
+                      [class.bg-success]="_quiz()!.isValidated"
+                      [class.bg-warning]="!_quiz()!.isValidated">
+                  {{ _quiz()!.isValidated ? 'Validé' : 'En attente' }}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions List -->
+      <div class="questions-section" *ngIf="quizWithQuestions()">
+        <h5><i class="fas fa-list me-2"></i>Questions ({{ quizWithQuestions()!.questions.length }})</h5>
+        
+        <div class="question-navigation mb-3">
+          <button 
+            class="btn btn-sm me-1 mb-1"
+            [class.btn-primary]="currentQuestionIndex() === i"
+            [class.btn-outline-secondary]="currentQuestionIndex() !== i"
+            *ngFor="let q of quizWithQuestions()!.questions; let i = index"
+            (click)="setCurrentQuestion(i)"
+          >
+            {{ i + 1 }}
+          </button>
+        </div>
+
+        <div class="current-question" *ngIf="currentQuestion()">
+          <div class="question-card">
+            <div class="question-header">
+              <h6>
+                Question {{ currentQuestionIndex() + 1 }} / {{ quizWithQuestions()!.questions.length }}
+                <span class="badge bg-info ms-2">{{ currentQuestion()!.type }}</span>
+                <span class="badge bg-secondary ms-1">{{ currentQuestion()!.language }}</span>
+                <span class="badge ms-1"
+                      [class.bg-success]="currentQuestion()!.difficulty === 'easy'"
+                      [class.bg-warning]="currentQuestion()!.difficulty === 'medium'"
+                      [class.bg-danger]="currentQuestion()!.difficulty === 'hard'">
+                  {{ currentQuestion()!.difficulty }}
+                </span>
+              </h6>
+            </div>
+
+            <div class="question-content">
+              <div class="question-text-section mb-3">
+                <h6><i class="fas fa-question-circle me-2"></i>Question:</h6>
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="text-sijo-primary mb-0">Question {{ currentQuestionIndex() + 1 }} / {{ totalQuestions() }}</h4>
+        <span class="badge bg-sijo-primary">{{ currentQuestion()!.type }}</span>
+      </div>
+      
+      <div class="question-text p-3 bg-light rounded" [innerHTML]="currentQuestion()!.text | newline"></div>
+      
+      <!-- Answers for QCM type -->
+              </div>
+
+              <!-- QCM Questions -->
+              <div *ngIf="currentQuestion()!.type === 'qcm' && currentQuestion()!.answers" class="qcm-section mt-3">
+                <h6><i class="fas fa-list-ul me-2"></i>Options:</h6>
+                <div class="options-container">
+                  <div class="option mb-2" *ngFor="let answer of currentQuestion()!.answers; let i = index">
+                    <div class="option-item p-3 border rounded" 
+                         [class.border-success]="answer.isCorrect" 
+                         [class.bg-success-subtle]="answer.isCorrect">
+                      <div class="d-flex align-items-center">
+                        <span class="option-letter badge me-3"
+                              [class.bg-success]="answer.isCorrect"
+                              [class.bg-secondary]="!answer.isCorrect">
+                          {{ getOptionLetter(i) }}
+                        </span>
+                        <span class="option-text flex-grow-1">{{ answer.option }}</span>
+                        <i *ngIf="answer.isCorrect" class="fas fa-check-circle text-success ms-2 fs-5"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="correct-answer-highlight mt-3 p-3 bg-success-subtle border border-success rounded">
+                  <h6 class="text-success"><i class="fas fa-check-circle me-2"></i>Réponse Correcte:</h6>
+                  <strong class="text-success">{{ getCorrectAnswerText() }}</strong>
+                </div>
+              </div>
+
+              <!-- Fill-in-the-blank Questions -->
+              <div *ngIf="currentQuestion()!.type === 'fill-in-the-blank'" class="fill-blank-section mt-3">
+                <div class="expected-answer-highlight p-3 bg-success-subtle border border-success rounded">
+                  <h6 class="text-success"><i class="fas fa-check-circle me-2"></i>Réponse Attendue:</h6>
+                  <div class="expected-answer">
+                    <code class="bg-white p-2 rounded border">{{ currentQuestion()!.expectedAnswer }}</code>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Coding Questions -->
+              <div *ngIf="currentQuestion()!.type === 'coding'" class="coding-section mt-3">
+                <!-- Code Template -->
+                <div *ngIf="currentQuestion()!.code" class="code-template-section mb-4">
+                  <h6><i class="fas fa-code me-2"></i>Template de Code:</h6>
+                  <pre class="code-block p-3 bg-dark text-light rounded"><code>{{ currentQuestion()!.code }}</code></pre>
+                </div>
+
+                <!-- Test Cases -->
+                <div *ngIf="currentQuestion()!.testCases && currentQuestion()!.testCases!.length > 0" class="test-cases-section mb-4">
+                  <h6><i class="fas fa-flask me-2"></i>Test Cases ({{ currentQuestion()!.testCases!.length }}):</h6>
+                  <div class="test-cases-container">
+                    <div *ngFor="let testCase of currentQuestion()!.testCases!; let tc = index" 
+                         class="test-case-item mb-3 p-3 border rounded bg-light">
+                      <h6 class="test-case-header d-flex align-items-center">
+                        <i class="fas fa-vial me-2 text-primary"></i>
+                        <span>Test Case {{ tc + 1 }}</span>
+                        <span *ngIf="testCase.description" class="text-muted ms-2 fw-normal">- {{ testCase.description }}</span>
+                      </h6>
+                      <div class="row mt-3">
+                        <div class="col-md-6">
+                          <label class="form-label fw-bold text-primary">
+                            <i class="fas fa-arrow-right me-1"></i>Input:
+                          </label>
+                          <pre class="test-input p-2 bg-white border rounded"><code>{{ testCase.input }}</code></pre>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-bold text-success">
+                            <i class="fas fa-arrow-left me-1"></i>Expected Output:
+                          </label>
+                          <pre class="test-output p-2 bg-white border rounded"><code>{{ testCase.expectedOutput }}</code></pre>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Question Metadata -->
+              <div class="question-metadata mt-4">
+                <!-- Explanation -->
+                <div *ngIf="currentQuestion()!.explanation" class="explanation-section mb-3">
+                  <h6><i class="fas fa-lightbulb me-2"></i>Explication:</h6>
+                  <div class="explanation-text p-3 bg-info-subtle border border-info rounded">
+                    <p class="mb-0">{{ currentQuestion()!.explanation }}</p>
+                  </div>
+                </div>
+
+                <!-- Tags -->
+                <div *ngIf="currentQuestion()!.tags && currentQuestion()!.tags!.length > 0" class="tags-section mb-3">
+                  <h6><i class="fas fa-tags me-2"></i>Tags:</h6>
+                  <div class="tags-container">
+                    <span *ngFor="let tag of currentQuestion()!.tags" class="badge bg-secondary me-2 mb-1">{{ tag }}</span>
+                  </div>
+                </div>
+
+                <!-- Question Status -->
+                <div class="question-status">
+                  <h6><i class="fas fa-check-circle me-2"></i>Statut:</h6>
+                  <span class="badge" 
+                        [class.bg-success]="currentQuestion()!.validity"
+                        [class.bg-warning]="!currentQuestion()!.validity">
+                    {{ currentQuestion()!.validity ? 'Validée' : 'En attente de validation' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Question Navigation -->
+            <div class="question-navigation-controls mt-4 d-flex justify-content-between">
+              <button 
+                class="btn btn-outline-primary"
+                [disabled]="currentQuestionIndex() === 0"
+                (click)="previousQuestion()"
+              >
+                <i class="fas fa-chevron-left me-1"></i>
+                Précédente
+              </button>
+              
+              <div class="question-counter">
+                <span class="badge bg-primary fs-6">
+                  {{ currentQuestionIndex() + 1 }} / {{ quizWithQuestions()!.questions.length }}
+                </span>
+              </div>
+              
+              <button 
+                class="btn btn-outline-primary"
+                [disabled]="currentQuestionIndex() === quizWithQuestions()!.questions.length - 1"
+                (click)="nextQuestion()"
+              >
+                Suivante
+                <i class="fas fa-chevron-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading()" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement des questions...</span>
+        </div>
+        <p class="mt-2">Chargement des questions du quiz...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="errorMessage()" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ errorMessage() }}
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="d-flex justify-content-between w-100">
+        <div>
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">
+            <i class="fas fa-times me-2"></i>
+            Fermer
+          </button>
+        </div>
+        <div *ngIf="_quiz() && !_quiz()!.isValidated">
+          <button type="button" class="btn btn-success me-2" (click)="validateQuiz()">
+            <i class="fas fa-check me-2"></i>
+            Valider ce Quiz
+          </button>
+          <button type="button" class="btn btn-warning" (click)="editQuiz()">
+            <i class="fas fa-edit me-2"></i>
+            Modifier
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

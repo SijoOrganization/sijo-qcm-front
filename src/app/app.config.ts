@@ -17,6 +17,12 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([tokenInterceptor, apiInterceptor, errorInterceptor])
     ),
-    provideMonacoEditor()
+    provideMonacoEditor({
+      baseUrl: '/assets/monaco/min/vs',
+      defaultOptions: {
+        theme: 'vs-dark',
+        language: 'javascript'
+      }
+    })
   ],
 };

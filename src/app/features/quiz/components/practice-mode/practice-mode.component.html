@@ -141,7 +141,7 @@
             
             <div class="card-body">
               <div class="question-content">
-                <h5 class="question-text">{{ currentQuestion()!.text }}</h5>
+                <h5 class="question-text" [innerHTML]="currentQuestion()!.text | newline"></h5>
                 
                 <!-- QCM Question -->
                 <div *ngIf="currentQuestion()!.type === 'qcm'" class="qcm-options">

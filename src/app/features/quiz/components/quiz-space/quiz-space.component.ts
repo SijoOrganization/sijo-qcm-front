@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router'; // <-- ajoute ceci
+import { NewlinePipe } from '../../../../shared/pipes/newline.pipe';
 
 type QuestionType = 'qcm' | 'fill-in-the-blank' | 'coding';
 
@@ -73,7 +74,7 @@ interface Quiz {
 @Component({
   selector: 'app-quiz-space',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule], // <-- ajoute RouterModule ici
+  imports: [CommonModule, FormsModule, RouterModule, NewlinePipe], // <-- ajoute RouterModule ici
   templateUrl: './quiz-space.component.html',
   styleUrls: ['./quiz-space.component.css'],
 })

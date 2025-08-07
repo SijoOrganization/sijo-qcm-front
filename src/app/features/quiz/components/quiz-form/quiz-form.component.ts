@@ -10,6 +10,7 @@ import {
   effect,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { QuizAiAdapterService } from '../../services/quiz-ai-adapter.service';
 import { JavaCodeGenerator } from '../../../coding-questions/codeGenerators/java.generator';
 import { PythonCodeGenerator } from '../../../coding-questions/codeGenerators/python.generator';
 import { TypescriptCodeGenerator } from '../../../coding-questions/codeGenerators/typescript.generator';
@@ -31,6 +32,7 @@ export class QuizFormComponent {
   private router = inject(Router);
   private codingQuestionsService = inject(CodingQuestionsService);
   private quizService = inject(QuizService);
+  private quizAiAdapter = inject(QuizAiAdapterService);
 
   quiz = model.required<Quiz>();
   isEditing = input<Boolean>(false);
@@ -333,35 +335,75 @@ export class QuizFormComponent {
   }
 
   generateCodeTemplate(q: any): string {
-    const language = (q.language || '').toLowerCase();
-    let functionSignatures: FunctionSignature[] = Array.isArray(q.functionSignatures) ? q.functionSignatures : [];
-    let signature = functionSignatures.find(
-      (sig: FunctionSignature) => sig.language?.toLowerCase() === language
-    );
-    if (!signature) {
-      signature = {
-        language: q.language,
-        arguments: [],
-        returnType: 'void',
-      };
-      functionSignatures = [...functionSignatures, signature];
+    if (q.type !== 'coding') {
+      return '';
     }
-    const codingQuestion: CodingQuestion = {
-      title: q.text,
-      description: q.description || '',
-      testCases: q.testCases || [],
-      functionSignatures,
-      functionName: q.functionName || 'solution',
-    };
-    switch (language) {
+
+    try {
+      // Convertir la question AI au format CodingQuestion compatible
+      const codingQuestion = this.quizAiAdapter.convertAiQuestionToCoding(q, q.language || 'java');
+      const language = (q.language || 'java').toLowerCase();
+      
+      // Trouver la signature correspondante au langage
+      const signature = codingQuestion.functionSignatures.find(
+        (sig: FunctionSignature) => sig.language.toLowerCase() === language
+      );
+      
+      if (!signature) {
+        console.warn(`No signature found for language: ${language}`);
+        return this.generateFallbackTemplate(q, language);
+      }
+      
+      // Utiliser les générateurs existants de "all coding questions"
+      switch (language) {
+        case 'java':
+          return JavaCodeGenerator.generateJavaCode(codingQuestion, signature);
+        case 'python':
+          return PythonCodeGenerator.generatePythonCode(codingQuestion, signature);
+        case 'typescript':
+        case 'javascript':
+          return TypescriptCodeGenerator.generateTypescriptCode(codingQuestion, signature);
+        default:
+          return JavaCodeGenerator.generateJavaCode(codingQuestion, signature);
+      }
+    } catch (error) {
+      console.error('Error generating code template for AI quiz question:', error);
+      // Fallback vers une méthode simple
+      return this.generateFallbackTemplate(q, q.language || 'java');
+    }
+  }
+
+  private generateFallbackTemplate(q: any, language: string): string {
+    const functionName = q.functionName || 'solve';
+    const normalizedLanguage = language.toLowerCase();
+    
+    switch (normalizedLanguage) {
       case 'java':
-        return JavaCodeGenerator.generateJavaCode(codingQuestion, signature);
+        return `public int ${functionName}(int input) {
+    // TODO: Implémentez votre solution ici
+    return 0;
+}`;
       case 'python':
-        return PythonCodeGenerator.generatePythonCode(codingQuestion, signature);
+        return `def ${functionName}(input):
+    # TODO: Implémentez votre solution ici
+    return 0`;
+      case 'javascript':
       case 'typescript':
-        return TypescriptCodeGenerator.generateTypescriptCode(codingQuestion, signature);
+        return `function ${functionName}(input) {
+    // TODO: Implémentez votre solution ici
+    return 0;
+}`;
+      case 'c++':
+        return `int ${functionName}(int input) {
+    // TODO: Implémentez votre solution ici
+    return 0;
+}`;
       default:
-        return '// No template available for this language';
+        return `// Template pour ${language}
+int ${functionName}(int input) {
+    // TODO: Implémentez votre solution ici
+    return 0;
+}`;
     }
   }
 

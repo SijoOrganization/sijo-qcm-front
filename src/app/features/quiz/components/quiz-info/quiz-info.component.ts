@@ -9,6 +9,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { QuizService } from '../../services/quiz.service';
 import { Quiz } from '../../../../shared/models/quiz.model';
+import { NewlinePipe } from '../../../../shared/pipes/newline.pipe';
 import { QuizHistoryComponent } from '../quiz-history/quiz-history.component';
 import { SubmissionService } from '../../services/submission.service';
 import { combineLatest, finalize } from 'rxjs';
@@ -18,7 +19,7 @@ import { SpinnerService } from '../../../../shared/services/spinner.service';
 @Component({
   selector: 'app-quiz-info',
   standalone: true,
-  imports: [CommonModule, RouterModule, QuizHistoryComponent],
+  imports: [CommonModule, RouterModule, QuizHistoryComponent, NewlinePipe],
   templateUrl: './quiz-info.component.html',
   styleUrl: './quiz-info.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

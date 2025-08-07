@@ -1,0 +1,129 @@
+<div class="quiz-instructions-container" *ngIf="!loading && !error">
+  <!-- Header avec logo SIJO -->
+  <div class="header">
+    <img src="/assets/logos/sijo-logo.png" alt="SIJO" class="logo" />
+    <h1 class="title">Instructions du Quiz</h1>
+  </div>
+
+  <div class="content" *ngIf="session">
+    <!-- Information du Quiz -->
+    <div class="quiz-info-card">
+      <h2>{{ session.quiz?.title }}</h2>
+      <div class="quiz-meta">
+        <div class="meta-item">
+          <i class="icon-language"></i>
+          <span>{{ getLanguageLabel(session.quiz?.language || '') }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="icon-difficulty"></i>
+          <span>{{ getDifficultyLabel(session.quiz?.difficulty || '') }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="icon-time"></i>
+          <span>{{ formatDuration(session.quiz?.estimatedDuration || 0) }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="icon-questions"></i>
+          <span>{{ session.quiz?.questions?.length || 0 }} questions</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions générales -->
+    <div class="instructions-card">
+      <h3>Instructions importantes</h3>
+      <ul class="instructions-list">
+        <li>
+          <strong>Durée :</strong> Vous avez {{ formatDuration(session.quiz?.estimatedDuration || 0) }} 
+          pour compléter ce quiz. Le temps sera affiché en haut de l'écran.
+        </li>
+        <li>
+          <strong>Questions :</strong> Ce quiz contient {{ session.quiz?.questions?.length || 0 }} questions 
+          de différents types (QCM, Code, Texte à trous).
+        </li>
+        <li>
+          <strong>Navigation :</strong> Vous pouvez naviguer entre les questions et revenir aux précédentes 
+          pour modifier vos réponses.
+        </li>
+        <li>
+          <strong>Sauvegarde :</strong> Vos réponses sont automatiquement sauvegardées au fur et à mesure.
+        </li>
+        <li>
+          <strong>Validation :</strong> Une fois toutes les questions répondues, vous pourrez valider 
+          et soumettre votre quiz.
+        </li>
+        <li>
+          <strong>Important :</strong> Une fois le quiz soumis, vous ne pourrez plus modifier vos réponses.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Types de questions -->
+    <div class="question-types-card">
+      <h3>Types de questions</h3>
+      <div class="question-types">
+        <div class="question-type">
+          <div class="type-icon qcm-icon">QCM</div>
+          <div class="type-content">
+            <h4>Questions à Choix Multiple</h4>
+            <p>Sélectionnez une ou plusieurs réponses parmi les choix proposés.</p>
+          </div>
+        </div>
+        <div class="question-type">
+          <div class="type-icon coding-icon">{{ '{' }} {{ '}' }}</div>
+          <div class="type-content">
+            <h4>Questions de Code</h4>
+            <p>Complétez ou écrivez du code dans l'éditeur intégré avec coloration syntaxique.</p>
+          </div>
+        </div>
+        <div class="question-type">
+          <div class="type-icon fillblank-icon">___</div>
+          <div class="type-content">
+            <h4>Texte à Trous</h4>
+            <p>Complétez les mots ou expressions manquants dans le texte.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conseils -->
+    <div class="tips-card">
+      <h3>Conseils pour réussir</h3>
+      <ul class="tips-list">
+        <li>Lisez attentivement chaque question avant de répondre</li>
+        <li>Gérez votre temps : n'hésitez pas à passer à la question suivante si vous bloquez</li>
+        <li>Pour les questions de code, testez mentalement votre logique</li>
+        <li>Vérifiez vos réponses avant la validation finale</li>
+        <li>Restez calme et concentré tout au long du quiz</li>
+      </ul>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-secondary" (click)="router.navigate(['/candidate'])">
+        <i class="icon-arrow-left"></i>
+        Retour
+      </button>
+      <button class="btn-primary" (click)="startQuiz()">
+        <i class="icon-play"></i>
+        Commencer le Quiz
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Chargement des informations du quiz...</p>
+</div>
+
+<!-- Error State -->
+<div class="error-container" *ngIf="error">
+  <div class="error-icon">⚠️</div>
+  <h3>Erreur</h3>
+  <p>{{ error }}</p>
+  <button class="btn-secondary" (click)="router.navigate(['/candidate'])">
+    Retour à l'accueil
+  </button>
+</div>

@@ -1,169 +1,176 @@
-import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AIQuizGeneratorService, AIQuizGenerationRequest } from '../../services/ai-quiz-generator.service';
-import { QuestionBankService } from '../../services/question-bank.service';
 import { QuizService } from '../../services/quiz.service';
+import { AlertService } from '../../../../core/alert/services/alert.service';
+import { SpinnerService } from '../../../../shared/services/spinner.service';
+
+export interface AiQuizRequest {
+  subject: string;
+  topics: string;
+  difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
+  numberOfQuestions: number;
+  language: string;
+  includeCode: boolean;
+  questionTypes: string[];
+}
 
 @Component({
   selector: 'app-ai-quiz-generator',
-  imports: [CommonModule, FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './ai-quiz-generator.component.html',
-  styleUrl: './ai-quiz-generator.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: './ai-quiz-generator.component.css'
 })
-export class AIQuizGeneratorComponent {
-  private aiQuizGenerator = inject(AIQuizGeneratorService);
-  private questionBankService = inject(QuestionBankService);
-  private quizService = inject(QuizService);
-  private router = inject(Router);
-
-  // Generation status
-  isGenerating = this.aiQuizGenerator.isGenerating;
-  generationProgress = signal(0);
-  generationMessage = signal('');
-
-  // Form data
-  generationForm = signal<AIQuizGenerationRequest>({
-    topics: [],
-    difficulty: 'medium',
-    languages: ['Java'],
-    questionTypes: ['qcm', 'fill-in-the-blank', 'coding'],
-    questionCount: 10,
-    codingQuestionCount: 3,
-    includeExistingQuestions: true,
-    validatedOnly: true
-  });
-
-  // Available options
-  availableLanguages = ['Java', 'Python', 'TypeScript', 'JavaScript', 'C++', 'C#'];
-  availableDifficulties = ['easy', 'medium', 'hard', 'mixed'];
-  availableQuestionTypes: { value: 'qcm' | 'fill-in-the-blank' | 'coding'; label: string }[] = [
-    { value: 'qcm', label: 'Multiple Choice' },
-    { value: 'fill-in-the-blank', label: 'Fill in the Blank' },
-    { value: 'coding', label: 'Coding Challenges' }
+export class AiQuizGeneratorComponent implements OnInit {
+  
+  generatorForm: FormGroup;
+  isGenerating = signal(false);
+  result: any = null;
+  error: string | null = null;
+  
+  // Options pour le formulaire
+  languages = [
+    { value: 'Java', label: 'Java', icon: '☕' },
+    { value: 'Python', label: 'Python', icon: '🐍' },
+    { value: 'JavaScript', label: 'JavaScript', icon: '🟨' },
+    { value: 'TypeScript', label: 'TypeScript', icon: '🔷' },
+    { value: 'C++', label: 'C++', icon: '⚡' },
+    { value: 'C#', label: 'C#', icon: '🔵' },
+    { value: 'Go', label: 'Go', icon: '🐹' },
+    { value: 'Rust', label: 'Rust', icon: '🦀' }
   ];
-
-  // Topic suggestions
-  topicSuggestions = [
-    'Data Structures', 'Algorithms', 'Object-Oriented Programming', 'Design Patterns',
-    'Database Management', 'Web Development', 'API Design', 'Software Architecture',
-    'Testing', 'Version Control', 'Frameworks', 'Security', 'Performance Optimization'
+  
+  difficulties = [
+    { value: 'easy', label: 'Débutant', description: 'Concepts de base', color: '#28a745' },
+    { value: 'medium', label: 'Intermédiaire', description: 'Logique et structures', color: '#ffc107' },
+    { value: 'hard', label: 'Avancé', description: 'Optimisation et patterns', color: '#dc3545' }
   ];
-
-  // New topic input
-  newTopic = signal('');
-
-  updateForm<K extends keyof AIQuizGenerationRequest>(key: K, value: AIQuizGenerationRequest[K]) {
-    this.generationForm.update(form => ({ ...form, [key]: value }));
+  
+  predefinedTopics = [
+    'Variables et Types',
+    'Conditions et Boucles',
+    'Fonctions et Méthodes',
+    'Classes et Objets',
+    'Héritage et Polymorphisme',
+    'Collections et Tableaux',
+    'Gestion des Exceptions',
+    'Algorithmes de Tri',
+    'Structures de Données',
+    'Programmation Fonctionnelle',
+    'Design Patterns',
+    'Concurrence et Threading',
+    'Tests Unitaires',
+    'Performance et Optimisation'
+  ];
+  
+  selectedTopics: string[] = [];
+  
+  constructor(
+    private fb: FormBuilder,
+    private quizService: QuizService,
+    private router: Router,
+    private alertService: AlertService,
+    private spinnerService: SpinnerService
+  ) {
+    this.generatorForm = this.fb.group({
+      subject: ['', [Validators.required, Validators.minLength(3)]],
+      topics: [''],
+      difficulty: ['medium', Validators.required],
+      numberOfQuestions: [10, [Validators.required, Validators.min(1), Validators.max(20)]],
+      language: ['Java', Validators.required],
+      includeCode: [true],
+      questionTypes: [['qcm', 'coding', 'fill-blank']]
+    });
   }
-
-  addTopic(topic: string) {
-    if (topic.trim() && !this.generationForm().topics.includes(topic.trim())) {
-      this.updateForm('topics', [...this.generationForm().topics, topic.trim()]);
-    }
-    this.newTopic.set('');
+  
+  ngOnInit(): void {
+    // Initialisation
   }
-
-  removeTopic(topic: string) {
-    this.updateForm('topics', this.generationForm().topics.filter(t => t !== topic));
-  }
-
-  addSuggestedTopic(topic: string) {
-    this.addTopic(topic);
-  }
-
-  toggleQuestionType(type: 'qcm' | 'fill-in-the-blank' | 'coding') {
-    const currentTypes = this.generationForm().questionTypes;
-    if (currentTypes.includes(type)) {
-      this.updateForm('questionTypes', currentTypes.filter(t => t !== type));
+  
+  toggleTopic(topic: string): void {
+    const index = this.selectedTopics.indexOf(topic);
+    if (index > -1) {
+      this.selectedTopics.splice(index, 1);
     } else {
-      this.updateForm('questionTypes', [...currentTypes, type]);
+      this.selectedTopics.push(topic);
     }
+    this.updateTopicsString();
   }
-
-  toggleLanguage(language: string) {
-    const currentLanguages = this.generationForm().languages;
-    if (currentLanguages.includes(language)) {
-      this.updateForm('languages', currentLanguages.filter(l => l !== language));
-    } else {
-      this.updateForm('languages', [...currentLanguages, language]);
+  
+  private updateTopicsString(): void {
+    const topicsValue = this.selectedTopics.length > 0 
+      ? this.selectedTopics.join(', ') 
+      : this.generatorForm.get('subject')?.value || '';
+    this.generatorForm.patchValue({ topics: topicsValue });
+  }
+  
+  generateQuiz(): void {
+    const formValue = this.generatorForm.value;
+    if (!formValue.subject?.trim() && this.selectedTopics.length === 0) {
+      this.error = 'Veuillez saisir un sujet ou sélectionner des topics';
+      return;
     }
-  }
-
-  async generateQuiz() {
-    const form = this.generationForm();
     
-    // Validation
-    if (form.topics.length === 0) {
-      alert('Please add at least one topic');
-      return;
-    }
-
-    if (form.questionCount < 1 || form.questionCount > 50) {
-      alert('Question count must be between 1 and 50');
-      return;
-    }
-
-    // Start generation
-    this.generationProgress.set(0);
-    this.generationMessage.set('Starting quiz generation...');
-
-    try {
-      // Simulate progress updates
-      this.simulateProgress();
-
-      // Use the simplified back-end generation
-      const topicsString = form.topics.join(', ');
-      const quiz = await this.aiQuizGenerator.generateQuizWithBackend(topicsString, form.questionCount).toPromise();
-      
-      if (quiz) {
-        this.generationProgress.set(100);
-        this.generationMessage.set('Quiz generated successfully! It has been added to the admin dashboard for validation.');
+    this.isGenerating.set(true);
+    this.error = null;
+    this.result = null;
+    
+    // Préparer la requête
+    const requestData = {
+      subject: formValue.subject || '',
+      topics: this.selectedTopics.length > 0 ? this.selectedTopics.join(', ') : formValue.subject?.trim() || '',
+      difficulty: formValue.difficulty,
+      numberOfQuestions: formValue.numberOfQuestions,
+      language: formValue.language,
+      includeCode: formValue.includeCode,
+      questionTypes: formValue.questionTypes
+    };
+    
+    console.log('Génération du quiz avec:', requestData);
+    
+    // Appeler le service pour générer le quiz
+    this.quizService.generateAIQuiz(requestData).subscribe({
+      next: (response) => {
+        console.log('Quiz généré:', response);
+        this.result = {
+          quiz: response.quiz,
+          questionsGenerated: response.quiz.questions.length,
+          generationTimeMs: response.metadata.generationTime,
+          confidence: response.metadata.confidence
+        };
+        this.isGenerating.set(false);
         
-        // Navigate to the admin dashboard to see pending quizzes
+        // Rediriger vers la page de visualisation du quiz après 2 secondes
         setTimeout(() => {
-          this.router.navigate(['/admin']);
+          if (response.quiz && response.quiz._id) {
+            this.router.navigate(['/quiz', response.quiz._id]);
+          }
         }, 2000);
+      },
+      error: (error) => {
+        console.error('Erreur génération:', error);
+        this.error = error.message || 'Erreur lors de la génération du quiz';
+        this.isGenerating.set(false);
       }
-    } catch (error) {
-      console.error('Error generating quiz:', error);
-      this.generationMessage.set('Error generating quiz. Please try again.');
+    });
+  }
+  
+  onSubjectChange(): void {
+    if (this.selectedTopics.length === 0) {
+      const subject = this.generatorForm.get('subject')?.value || '';
+      this.generatorForm.patchValue({ topics: subject });
     }
   }
-
-  private simulateProgress() {
-    const steps = [
-      { progress: 10, message: 'Analyzing topics and requirements...' },
-      { progress: 25, message: 'Searching existing question bank...' },
-      { progress: 40, message: 'Generating new questions with AI...' },
-      { progress: 60, message: 'Validating question quality...' },
-      { progress: 80, message: 'Assembling final quiz...' },
-      { progress: 95, message: 'Finalizing quiz structure...' }
-    ];
-
-    steps.forEach((step, index) => {
-      setTimeout(() => {
-        this.generationProgress.set(step.progress);
-        this.generationMessage.set(step.message);
-      }, index * 800);
-    });
+  
+  getDifficultyColor(difficulty: string): string {
+    const diff = this.difficulties.find(d => d.value === difficulty);
+    return diff ? diff.color : '#6c757d';
   }
-
-  resetForm() {
-    this.generationForm.set({
-      topics: [],
-      difficulty: 'medium',
-      languages: ['Java'],
-      questionTypes: ['qcm', 'fill-in-the-blank', 'coding'],
-      questionCount: 10,
-      codingQuestionCount: 3,
-      includeExistingQuestions: true,
-      validatedOnly: true
-    });
-    this.newTopic.set('');
-    this.generationProgress.set(0);
-    this.generationMessage.set('');
+  
+  getLanguageIcon(language: string): string {
+    const lang = this.languages.find(l => l.value === language);
+    return lang ? lang.icon : '💻';
   }
 }

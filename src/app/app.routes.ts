@@ -8,7 +8,7 @@ import { HomeComponent } from './core/layout/home/home.component';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'platform',
+    redirectTo: 'candidate',
     pathMatch: 'full',
   },
   {
@@ -35,6 +35,7 @@ export const routes: Routes = [
     ],
     canActivate: [() => !inject(AuthService).isAuthenticated()],
   },
+  // 🎯 ADMIN ZONE - Seule zone pour créer des quiz
   {
     path: 'admin',
     children: [
@@ -48,142 +49,109 @@ export const routes: Routes = [
       },
     ],
   },
+  // 🎯 CANDIDATE ZONE - Espace candidat pour s'inscrire et passer des quiz
+  {
+    path: 'candidate',
+    children: [
+      {
+        path: '',
+        redirectTo: 'register',
+        pathMatch: 'full',
+      },
+      {
+        path: 'register',
+        loadComponent: () =>
+          import('./features/candidate/components/candidate-registration/candidate-registration.component').then(
+            (m) => m.CandidateRegistrationComponent,
+          ),
+      },
+      {
+        path: 'waiting/:candidateId',
+        loadComponent: () =>
+          import('./features/candidate/components/candidate-waiting/candidate-waiting.component').then(
+            (m) => m.CandidateWaitingComponent,
+          ),
+      },
+      {
+        path: 'quiz-instructions/:sessionId',
+        loadComponent: () =>
+          import('./features/candidate/components/quiz-instructions/quiz-instructions.component').then(
+            (m) => m.QuizInstructionsComponent,
+          ),
+      },
+      {
+        path: 'quiz-taking/:sessionId',
+        loadComponent: () =>
+          import('./features/candidate/components/quiz-taking/quiz-taking.component').then(
+            (m) => m.QuizTakingComponent,
+          ),
+      },
+      {
+        path: 'quiz/:sessionId',
+        loadComponent: () =>
+          import('./features/candidate/components/quiz-taking/quiz-taking.component').then(
+            (m) => m.QuizTakingComponent,
+          ),
+      },
+      {
+        path: 'quiz-results/:sessionId',
+        loadComponent: () =>
+          import('./features/candidate/components/quiz-results/quiz-results.component').then(
+            (m) => m.QuizResultsComponent,
+          ),
+      },
+      {
+        path: 'results/:sessionId',
+        loadComponent: () =>
+          import('./features/candidate/components/quiz-results/quiz-results.component').then(
+            (m) => m.QuizResultsComponent,
+          ),
+      },
+    ],
+  },
+  // 🎯 PLATFORM ZONE - Plateforme de test pour utilisateurs connectés
   {
     path: 'platform',
-    loadComponent: () =>
-      import('./features/quiz/components/platform-dashboard/platform-dashboard.component').then(
-        (m) => m.PlatformDashboardComponent,
-      ),
-  },
-  {
-    path: 'quizzes',
     children: [
       {
         path: '',
         loadComponent: () =>
-          import(
-            './features/quiz/components/quiz-list/quiz-list.component'
-          ).then((m) => m.QuizListComponent),
-      },
-      {
-        path: 'create',
-        loadComponent: () =>
-          import(
-            './features/quiz/components/quiz-edit/quiz-edit.component'
-          ).then((m) => m.QuizEditComponent),
-        canActivate: [AuthGuard, TutorGuard],
-      },
-      {
-        path: 'ai-generator',
-        loadComponent: () =>
-          import(
-            './features/quiz/components/ai-quiz-generator/ai-quiz-generator.component'
-          ).then((m) => m.AIQuizGeneratorComponent),
-        canActivate: [AuthGuard, TutorGuard],
+          import('./features/quiz/components/platform-dashboard/platform-dashboard.component').then(
+            (m) => m.PlatformDashboardComponent,
+          ),
       },
       {
         path: 'practice',
         loadComponent: () =>
-          import(
-            './features/quiz/components/practice-mode-new/practice-mode-new.component'
-          ).then((m) => m.PracticeModeComponent),
+          import('./features/quiz/components/practice-mode-new/practice-mode-new.component').then(
+            (m) => m.PracticeModeComponent,
+          ),
         canActivate: [AuthGuard],
       },
       {
-        path: 'question-bank',
+        path: 'quiz/:id',
         loadComponent: () =>
-          import(
-            './features/quiz/components/question-bank/question-bank.component'
-          ).then((m) => m.QuestionBankComponent),
-        canActivate: [AuthGuard, TutorGuard],
-      },
-      {
-        path: ':id',
-        loadComponent: () =>
-          import(
-            './features/quiz/components/quiz-info/quiz-info.component'
-          ).then((m) => m.QuizInfoComponent),
+          import('./features/quiz/components/quiz-info/quiz-info.component').then(
+            (m) => m.QuizInfoComponent,
+          ),
         canActivate: [AuthGuard],
       },
       {
-        path: ':id/take',
+        path: 'quiz/:id/take',
         loadComponent: () =>
-          import(
-            './features/quiz/components/quiz-taker/quiz-taker.component'
-          ).then((m) => m.QuizTakerComponent),
+          import('./features/quiz/components/quiz-taker/quiz-taker.component').then(
+            (m) => m.QuizTakerComponent,
+          ),
         canActivate: [AuthGuard],
       },
       {
-        path: ':id/edit',
+        path: 'results/:id',
         loadComponent: () =>
-          import(
-            './features/quiz/components/quiz-edit/quiz-edit.component'
-          ).then((m) => m.QuizEditComponent),
-        canActivate: [AuthGuard, TutorGuard],
+          import('./features/quiz/components/submission/submission.component').then(
+            (m) => m.SubmissionComponent,
+          ),
+        canActivate: [AuthGuard],
       },
     ],
-  },
-  {
-    path: 'submissions',
-    children: [
-      {
-        path: ':id',
-        loadComponent: () =>
-          import(
-            './features/quiz/components/submission/submission.component'
-          ).then((m) => m.SubmissionComponent),
-      },
-    ],
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'coding-questions',
-    children: [
-      {
-        path: '',
-        loadComponent: () =>
-          import(
-            './features/coding-questions/components/coding-questions-list/coding-questions-list.component'
-          ).then((m) => m.CodingQuestionsListComponent),
-      },
-      {
-        path: 'create',
-        loadComponent: () =>
-          import(
-            './features/coding-questions/components/coding-question-edit/coding-question-edit.component'
-          ).then((m) => m.CodingQuestionEditComponent),
-        canActivate: [AuthGuard, TutorGuard],
-      },
-      {
-        path: ':id/edit',
-        loadComponent: () =>
-          import(
-            './features/coding-questions/components/coding-question-edit/coding-question-edit.component'
-          ).then((m) => m.CodingQuestionEditComponent),
-        canActivate: [AuthGuard, TutorGuard],
-      },
-      {
-        path: ':id',
-        loadComponent: () =>
-          import(
-            './features/coding-questions/components/coding-question-start/coding-question-start.component'
-          ).then((m) => m.CodingQuestionStartComponent),
-      },
-    ],
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'quiz-space',
-    loadComponent: () =>
-      import('./features/quiz/components/quiz-space/quiz-space.component').then(
-        (m) => m.QuizSpaceComponent,
-      ),
-  },
-  {
-    path: 'quiz-space/take/:id',
-    loadComponent: () =>
-      import(
-        './features/quiz/components/quiz-space-taker/quiz-space-taker.component'
-      ).then((m) => m.QuizSpaceTakerComponent),
   },
 ];

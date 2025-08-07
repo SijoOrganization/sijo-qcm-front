@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
 import { Quiz, Question } from '../../../../shared/models/quiz.model';
+import { NewlinePipe } from '../../../../shared/pipes/newline.pipe';
 
 interface SessionResults {
   score: number;
@@ -15,7 +16,7 @@ interface SessionResults {
 
 @Component({
   selector: 'app-practice-mode',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, NewlinePipe],
   templateUrl: './practice-mode-new.component.html',
   styleUrl: './practice-mode-new.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

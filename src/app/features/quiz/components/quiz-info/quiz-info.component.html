@@ -142,7 +142,7 @@
                        data-bs-parent="#questionsAccordion">
                     <div class="accordion-body">
                       <div class="question-preview">
-                        <h6>{{ question.text }}</h6>
+                        <h6 [innerHTML]="question.text | newline"></h6>
                         
                         @if (question.description) {
                           <p class="text-muted">{{ question.description }}</p>

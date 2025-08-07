@@ -56,7 +56,7 @@
     <div class="col-md-4 mb-3" *ngFor="let question of questions; let i = index">
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title">{{ question.text }}</h5>
+          <h5 class="card-title" [innerHTML]="(question.text || '') | newline"></h5>
           <p class="card-text">
             Type: {{ question.type }}<br>
             Langage: {{ question.language }}<br>

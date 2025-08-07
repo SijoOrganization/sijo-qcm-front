@@ -1,255 +1,212 @@
-<div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
-      <div class="card ai-generator-card">
-        <div class="card-header">
-          <h4 class="card-title mb-0">
-            <i class="fas fa-robot me-2"></i>
-            AI-Powered Quiz Generator
-          </h4>
-          <p class="card-subtitle mb-0">Generate intelligent quizzes with AI assistance</p>
-        </div>
-        
-        <div class="card-body">
-          <!-- Generation Progress -->
-          <div *ngIf="isGenerating()" class="generation-progress mb-4">
-            <div class="progress-header">
-              <h5>Generating Quiz...</h5>
-              <span class="progress-percentage">{{ generationProgress() }}%</span>
-            </div>
-            <div class="progress mb-2">
-              <div 
-                class="progress-bar progress-bar-striped progress-bar-animated" 
-                [style.width.%]="generationProgress()"
-                role="progressbar"
-              ></div>
-            </div>
-            <p class="generation-message">{{ generationMessage() }}</p>
+<div class="sijo-ai-generator">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="header-icon">🤖</div>
+      <div class="header-text">
+        <h1 class="header-title">Générateur de Quiz IA</h1>
+        <p class="header-subtitle">Créez des quiz personnalisés avec des questions QCM, de codage et de complétion</p>
+      </div>
+    </div>
+    <div class="header-decoration"></div>
+  </div>
+
+  <!-- Main Form -->
+  <div class="form-container">
+    <form (ngSubmit)="generateQuiz()" class="quiz-form" #quizForm="ngForm">
+      
+      <!-- Subject Input -->
+      <div class="form-group subject-group">
+        <label for="subject" class="form-label">
+          <span class="label-icon">📚</span>
+          Sujet Principal
+        </label>
+        <input 
+          type="text" 
+          id="subject" 
+          [(ngModel)]="request.subject" 
+          name="subject" 
+          class="form-input"
+          placeholder="Ex: Programmation Orientée Objet, Algorithmes..."
+          (input)="onSubjectChange()"
+          required>
+        <div class="input-decoration"></div>
+      </div>
+
+      <!-- Topics Selection -->
+      <div class="form-group topics-group">
+        <label class="form-label">
+          <span class="label-icon">🎯</span>
+          Topics Spécifiques (optionnel)
+        </label>
+        <div class="topics-container">
+          <div 
+            *ngFor="let topic of predefinedTopics" 
+            class="topic-chip"
+            [class.selected]="selectedTopics.includes(topic)"
+            (click)="toggleTopic(topic)">
+            {{ topic }}
           </div>
-
-          <!-- Generation Form -->
-          <form *ngIf="!isGenerating()" (ngSubmit)="generateQuiz()" class="generation-form">
-            <!-- Topics Section -->
-            <div class="form-section">
-              <h5 class="section-title">
-                <i class="fas fa-lightbulb me-2"></i>
-                Topics
-              </h5>
-              
-              <div class="mb-3">
-                <div class="input-group">
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    placeholder="Add a topic..."
-                    [(ngModel)]="newTopic"
-                    (keyup.enter)="addTopic(newTopic())"
-                    name="newTopic"
-                  />
-                  <button 
-                    class="btn btn-outline-primary" 
-                    type="button"
-                    (click)="addTopic(newTopic())"
-                    [disabled]="!newTopic().trim()"
-                  >
-                    <i class="fas fa-plus"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Selected Topics -->
-              <div class="selected-topics mb-3">
-                <span 
-                  *ngFor="let topic of generationForm().topics" 
-                  class="badge bg-primary topic-badge"
-                >
-                  {{ topic }}
-                  <button 
-                    type="button" 
-                    class="btn-close btn-close-white ms-2"
-                    (click)="removeTopic(topic)"
-                  ></button>
-                </span>
-              </div>
-
-              <!-- Topic Suggestions -->
-              <div class="topic-suggestions">
-                <small class="text-muted">Suggested topics:</small>
-                <div class="suggestion-chips">
-                  <button 
-                    *ngFor="let suggestion of topicSuggestions"
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary suggestion-chip"
-                    (click)="addSuggestedTopic(suggestion)"
-                    [disabled]="generationForm().topics.includes(suggestion)"
-                  >
-                    {{ suggestion }}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Quiz Configuration -->
-            <div class="form-section">
-              <h5 class="section-title">
-                <i class="fas fa-cogs me-2"></i>
-                Quiz Configuration
-              </h5>
-              
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Difficulty Level</label>
-                    <select 
-                      class="form-select"
-                      [(ngModel)]="generationForm().difficulty"
-                      (ngModelChange)="updateForm('difficulty', $event)"
-                      name="difficulty"
-                    >
-                      <option *ngFor="let diff of availableDifficulties" [value]="diff">
-                        {{ diff | titlecase }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Total Questions</label>
-                    <input 
-                      type="number" 
-                      class="form-control"
-                      [(ngModel)]="generationForm().questionCount"
-                      (ngModelChange)="updateForm('questionCount', $event)"
-                      min="1"
-                      max="50"
-                      name="questionCount"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Coding Questions</label>
-                    <input 
-                      type="number" 
-                      class="form-control"
-                      [(ngModel)]="generationForm().codingQuestionCount"
-                      (ngModelChange)="updateForm('codingQuestionCount', $event)"
-                      min="0"
-                      [max]="generationForm().questionCount"
-                      name="codingQuestionCount"
-                    />
-                  </div>
-                </div>
-                
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <div class="form-check">
-                      <input 
-                        class="form-check-input" 
-                        type="checkbox" 
-                        [(ngModel)]="generationForm().includeExistingQuestions"
-                        (ngModelChange)="updateForm('includeExistingQuestions', $event)"
-                        name="includeExistingQuestions"
-                      />
-                      <label class="form-check-label">
-                        Include existing questions
-                      </label>
-                    </div>
-                    <div class="form-check">
-                      <input 
-                        class="form-check-input" 
-                        type="checkbox" 
-                        [(ngModel)]="generationForm().validatedOnly"
-                        (ngModelChange)="updateForm('validatedOnly', $event)"
-                        name="validatedOnly"
-                      />
-                      <label class="form-check-label">
-                        Validated questions only
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Programming Languages -->
-            <div class="form-section">
-              <h5 class="section-title">
-                <i class="fas fa-code me-2"></i>
-                Programming Languages
-              </h5>
-              
-              <div class="language-selection">
-                <div 
-                  *ngFor="let language of availableLanguages" 
-                  class="form-check form-check-inline"
-                >
-                  <input 
-                    class="form-check-input" 
-                    type="checkbox" 
-                    [checked]="generationForm().languages.includes(language)"
-                    (change)="toggleLanguage(language)"
-                    [id]="'lang-' + language"
-                  />
-                  <label class="form-check-label" [for]="'lang-' + language">
-                    {{ language }}
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Question Types -->
-            <div class="form-section">
-              <h5 class="section-title">
-                <i class="fas fa-list me-2"></i>
-                Question Types
-              </h5>
-              
-              <div class="question-type-selection">
-                <div 
-                  *ngFor="let type of availableQuestionTypes" 
-                  class="form-check"
-                >
-                  <input 
-                    class="form-check-input" 
-                    type="checkbox" 
-                    [checked]="generationForm().questionTypes.includes(type.value)"
-                    (change)="toggleQuestionType(type.value)"
-                    [id]="'type-' + type.value"
-                  />
-                  <label class="form-check-label" [for]="'type-' + type.value">
-                    {{ type.label }}
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="form-actions">
-              <button 
-                type="submit" 
-                class="btn btn-primary btn-lg me-3"
-                [disabled]="generationForm().topics.length === 0 || generationForm().languages.length === 0 || generationForm().questionTypes.length === 0"
-              >
-                <i class="fas fa-magic me-2"></i>
-                Generate AI Quiz
-              </button>
-              
-              <button 
-                type="button" 
-                class="btn btn-outline-secondary"
-                (click)="resetForm()"
-              >
-                <i class="fas fa-undo me-2"></i>
-                Reset
-              </button>
-            </div>
-          </form>
         </div>
+      </div>
+
+      <!-- Configuration Row -->
+      <div class="config-row">
+        
+        <!-- Language Selection -->
+        <div class="form-group">
+          <label for="language" class="form-label">
+            <span class="label-icon">{{ getLanguageIcon(request.language) }}</span>
+            Langage
+          </label>
+          <select id="language" [(ngModel)]="request.language" name="language" class="form-select">
+            <option *ngFor="let lang of languages" [value]="lang.value">
+              {{ lang.icon }} {{ lang.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Difficulty Selection -->
+        <div class="form-group">
+          <label for="difficulty" class="form-label">
+            <span class="label-icon">⚡</span>
+            Difficulté
+          </label>
+          <div class="difficulty-options">
+            <div 
+              *ngFor="let diff of difficulties"
+              class="difficulty-option"
+              [class.selected]="request.difficulty === diff.value"
+              [style.border-color]="diff.color"
+              (click)="request.difficulty = diff.value">
+              <div class="difficulty-indicator" [style.background-color]="diff.color"></div>
+              <div class="difficulty-content">
+                <span class="difficulty-label">{{ diff.label }}</span>
+                <span class="difficulty-description">{{ diff.description }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Count -->
+        <div class="form-group">
+          <label for="numberOfQuestions" class="form-label">
+            <span class="label-icon">🔢</span>
+            Nombre de Questions
+          </label>
+          <div class="number-input-container">
+            <button 
+              type="button" 
+              class="number-btn"
+              (click)="request.numberOfQuestions = Math.max(1, request.numberOfQuestions - 1)">
+              -
+            </button>
+            <input 
+              type="number" 
+              id="numberOfQuestions" 
+              [(ngModel)]="request.numberOfQuestions" 
+              name="numberOfQuestions" 
+              class="number-input"
+              min="1" 
+              max="25">
+            <button 
+              type="button" 
+              class="number-btn"
+              (click)="request.numberOfQuestions = Math.min(25, request.numberOfQuestions + 1)">
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Options -->
+      <div class="form-group advanced-options">
+        <div class="form-label">
+          <span class="label-icon">⚙️</span>
+          Options Avancées
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="request.includeCode" 
+              name="includeCode"
+              class="checkbox-input">
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-text">Inclure des questions de codage avec tests</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <div class="submit-section">
+        <button 
+          type="submit" 
+          [disabled]="isGenerating || quizForm.invalid" 
+          class="generate-btn"
+          [class.generating]="isGenerating">
+          
+          <div class="btn-content">
+            <span class="btn-icon" *ngIf="!isGenerating">🚀</span>
+            <div class="spinner" *ngIf="isGenerating"></div>
+            <span class="btn-text">
+              {{ isGenerating ? 'Génération en cours...' : 'Générer le Quiz' }}
+            </span>
+          </div>
+          
+          <div class="btn-decoration" *ngIf="!isGenerating"></div>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Section -->
+  <div *ngIf="result" class="result-section animate-in">
+    <div class="result-content">
+      <div class="result-header">
+        <div class="result-icon">✨</div>
+        <h3 class="result-title">Quiz généré avec succès !</h3>
+      </div>
+      
+      <div class="result-stats">
+        <div class="stat-item">
+          <span class="stat-label">Questions créées</span>
+          <span class="stat-value">{{ result.questionsGenerated }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Temps de génération</span>
+          <span class="stat-value">{{ result.generationTimeMs }}ms</span>
+        </div>
+        <div class="stat-item" *ngIf="result.confidence">
+          <span class="stat-label">Confiance IA</span>
+          <span class="stat-value">{{ (result.confidence * 100) | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+      
+      <div class="result-actions">
+        <p class="redirect-message">Redirection vers le quiz dans quelques instants...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Section -->
+  <div *ngIf="error" class="error-section animate-in">
+    <div class="error-content">
+      <div class="error-icon">❌</div>
+      <h3 class="error-title">Erreur de génération</h3>
+      <p class="error-message">{{ error }}</p>
+      <button class="error-retry" (click)="error = null">Réessayer</button>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div *ngIf="isGenerating" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <h3 class="loading-title">Génération en cours...</h3>
+      <p class="loading-message">L'IA crée votre quiz personnalisé</p>
+      <div class="loading-progress">
+        <div class="progress-bar"></div>
       </div>
     </div>
   </div>

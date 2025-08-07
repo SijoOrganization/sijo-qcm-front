@@ -1,0 +1,132 @@
+<div class="results-container" *ngIf="!loading; else loadingTemplate">
+  
+  <!-- Header avec logo SIJO -->
+  <div class="header">
+    <img src="/assets/logos/sijo-logo.png" alt="SIJO" class="logo" />
+    <h1 class="title">Résultats du Quiz</h1>
+    <p class="subtitle">Merci d'avoir participé à notre évaluation technique</p>
+  </div>
+
+  <div class="content" *ngIf="results">
+    
+    <!-- Score principal -->
+    <div class="score-card">
+      <div class="score-circle" [ngClass]="getScoreColor()">
+        <div class="score-icon">{{ getScoreIcon() }}</div>
+        <div class="score-value">
+          <span class="score-number">{{ results.percentage }}</span>
+          <span class="score-percent">%</span>
+        </div>
+        <div class="score-label">{{ getScoreLabel() }}</div>
+      </div>
+      
+      <div class="score-details">
+        <h2>{{ results.correctAnswers }} / {{ results.totalQuestions }}</h2>
+        <p>Questions correctes</p>
+        <div class="score-badge" [ngClass]="results.passed ? 'passed' : 'failed'">
+          {{ results.passed ? 'RÉUSSI' : 'ÉCHEC' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Métriques -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon">⏱️</div>
+        <div class="metric-value">{{ formatDuration(results.timeSpentMinutes) }}</div>
+        <div class="metric-label">Temps passé</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-value">{{ results.totalScore }}/100</div>
+        <div class="metric-label">Score total</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">🎯</div>
+        <div class="metric-value">{{ passingScore }}%</div>
+        <div class="metric-label">Seuil de réussite</div>
+      </div>
+    </div>
+
+    <!-- Détails par type de question -->
+    <div class="breakdown-card">
+      <h3>Répartition par type de question</h3>
+      <div class="breakdown-list">
+        <div 
+          *ngFor="let type of getScoreTypes()" 
+          class="breakdown-item"
+        >
+          <div class="breakdown-header">
+            <div class="breakdown-icon">{{ getTypeIcon(type) }}</div>
+            <div class="breakdown-title">
+              <span class="type-name">{{ getTypeLabel(type) }}</span>
+              <span class="type-weight">({{ getTypeWeight(type) }}% du total)</span>
+            </div>
+            <div class="breakdown-score">{{ results.scoresByType[type] }}%</div>
+          </div>
+          
+          <div class="progress-bar">
+            <div 
+              class="progress-fill" 
+              [style.width.%]="results.scoresByType[type]"
+              [ngClass]="getProgressColor(results.scoresByType[type])"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommandations -->
+    <div class="recommendations-card" *ngIf="getRecommendations().length > 0">
+      <h3>Recommandations</h3>
+      <ul class="recommendations-list">
+        <li *ngFor="let recommendation of getRecommendations()">
+          {{ recommendation }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-secondary" (click)="goHome()">
+        <i class="icon-home"></i>
+        Retour à l'accueil
+      </button>
+      
+      <button 
+        *ngIf="results.passed" 
+        class="btn-primary" 
+        (click)="downloadCertificate()"
+      >
+        <i class="icon-download"></i>
+        Télécharger le certificat
+      </button>
+      
+      <button class="btn-outline" (click)="viewDetailedResults()">
+        <i class="icon-detail"></i>
+        Voir les détails
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Loading State -->
+<ng-template #loadingTemplate>
+  <div class="loading-container">
+    <div class="spinner"></div>
+    <p>Calcul des résultats en cours...</p>
+  </div>
+</ng-template>
+
+<!-- Error State -->
+<div class="error-container" *ngIf="error">
+  <div class="error-icon">⚠️</div>
+  <h3>Erreur</h3>
+  <p>{{ error }}</p>
+  <button class="btn-secondary" (click)="goHome()">
+    Retour à l'accueil
+  </button>
+</div>

@@ -118,14 +118,47 @@ export class QuizService {
   }
 
   fetchQuizWithQuestions(quizId: string): Observable<Quiz> {
-    // Use mock data instead of API call
-    const quiz = this.quizzes().find((quiz) => quiz._id === quizId);
-    if (quiz) {
-      return of(quiz);
-    }
-    
-    // If not found in mock data, return error
-    return throwError(() => new Error(`Quiz with ID ${quizId} not found`));
+    // Make actual API call to get quiz with questions but without correct answers for students
+    return this.http.get<Quiz>(`/api/quizzes/${quizId}?type=questions`).pipe(
+      map(quiz => {
+        if (!quiz) {
+          throw new Error('Quiz not found or is null');
+        }
+        return this.validateAndCleanQuiz(quiz);
+      }),
+      tap(quiz => {
+        console.log(`Fetched quiz with questions "${quiz.title}" with ${quiz.questions.length} questions`);
+      }),
+      catchError(error => {
+        console.error(`Error fetching quiz with questions ${quizId}:`, error);
+        // Fallback to cache if available
+        const quiz = this.quizzes().find((quiz) => quiz._id === quizId);
+        if (quiz) {
+          return of(quiz);
+        }
+        return throwError(() => new Error(`Quiz with ID ${quizId} not found`));
+      })
+    );
+  }
+
+  // Admin method: Fetch quiz with complete information including correct answers
+  fetchQuizForAdmin(quizId: string): Observable<Quiz> {
+    // For admins/tutors, we can fetch the complete quiz without type parameter
+    return this.http.get<Quiz>(`/api/quizzes/${quizId}`).pipe(
+      map(quiz => {
+        if (!quiz) {
+          throw new Error('Quiz not found or is null');
+        }
+        return this.validateAndCleanQuiz(quiz);
+      }),
+      tap(quiz => {
+        console.log(`Admin fetched complete quiz "${quiz.title}" with ${quiz.questions.length} questions`);
+      }),
+      catchError(error => {
+        console.error(`Error fetching quiz for admin ${quizId}:`, error);
+        return throwError(() => new Error(`Quiz with ID ${quizId} not found or access denied`));
+      })
+    );
   }
 
   // Enhanced random quiz generation
@@ -385,6 +418,8 @@ export class QuizService {
       quiz.questions = [];
     }
 
+    const originalQuestionCount = quiz.questions.length;
+
     // Remove null questions and clean up question data
     quiz.questions = quiz.questions.filter(question => {
       if (!question) {
@@ -392,23 +427,28 @@ export class QuizService {
         return false;
       }
 
-      // Ensure answers is never null
-      if (!question.answers) {
+      // Ensure answers is never null for QCM questions
+      if (question.type === 'qcm' && !question.answers) {
         question.answers = [];
       }
 
-      // Remove null answers
-      question.answers = question.answers.filter(answer => {
-        if (!answer) {
-          console.warn('Removing null answer from question');
-          return false;
-        }
-        return true;
-      });
+      // Remove null answers only for QCM questions
+      if (question.type === 'qcm' && question.answers) {
+        question.answers = question.answers.filter(answer => {
+          if (!answer) {
+            console.warn('Removing null answer from question');
+            return false;
+          }
+          return true;
+        });
+      }
 
       return true;
     });
 
+    // COMMENT: Désactiver la suppression de doublons pour éviter de perdre des questions valides
+    // La logique précédente était trop agressive et supprimait des questions légitimes
+    /*
     // Remove duplicate questions based on text
     const seenTexts = new Set<string>();
     quiz.questions = quiz.questions.filter(question => {
@@ -420,7 +460,122 @@ export class QuizService {
       seenTexts.add(normalizedText);
       return true;
     });
+    */
+
+    // Log if questions were filtered out
+    if (quiz.questions.length !== originalQuestionCount) {
+      console.warn(`Quiz "${quiz.title}": Filtered from ${originalQuestionCount} to ${quiz.questions.length} questions`);
+    } else {
+      console.log(`Quiz "${quiz.title}": All ${quiz.questions.length} questions preserved`);
+    }
 
     return quiz;
+  }
+
+  // Admin methods - fetch quizzes with questions included
+  fetchAllQuizzesForAdmin(): Observable<Quiz[]> {
+    return this.http.get<Quiz[]>('/api/quizzes/admin/all').pipe(
+      timeout(10000),
+      retry(2),
+      map(quizzes => {
+        if (!quizzes || !Array.isArray(quizzes)) {
+          console.warn('Invalid admin quiz data format received');
+          return [];
+        }
+        
+        // Validate and clean each quiz (admin quizzes include questions)
+        return quizzes.map(quiz => {
+          try {
+            return this.validateAndCleanQuiz(quiz);
+          } catch (error) {
+            console.error('Error validating admin quiz:', error);
+            return null;
+          }
+        }).filter(quiz => quiz !== null) as Quiz[];
+      }),
+      tap((quizzes) => {
+        console.log('Admin quizzes loaded successfully:', quizzes.length);
+        // Log questions count for debugging
+        quizzes.forEach(quiz => {
+          console.log(`Quiz "${quiz.title}" has ${quiz.questions?.length || 0} questions`);
+        });
+      }),
+      catchError((error) => {
+        console.error('Error fetching admin quizzes:', error);
+        return of([]);
+      })
+    );
+  }
+
+  fetchValidatedQuizzesForAdmin(): Observable<Quiz[]> {
+    return this.http.get<Quiz[]>('/api/quizzes/admin/validated').pipe(
+      timeout(10000),
+      retry(2),
+      map(quizzes => {
+        if (!quizzes || !Array.isArray(quizzes)) {
+          console.warn('Invalid validated quiz data format received');
+          return [];
+        }
+        
+        return quizzes.map(quiz => {
+          try {
+            return this.validateAndCleanQuiz(quiz);
+          } catch (error) {
+            console.error('Error validating validated quiz:', error);
+            return null;
+          }
+        }).filter(quiz => quiz !== null) as Quiz[];
+      }),
+      tap((quizzes) => {
+        console.log('Validated quizzes loaded successfully:', quizzes.length);
+      }),
+      catchError((error) => {
+        console.error('Error fetching validated quizzes:', error);
+        return of([]);
+      })
+    );
+  }
+
+  fetchPendingQuizzesForAdmin(): Observable<Quiz[]> {
+    return this.http.get<Quiz[]>('/api/quizzes/admin/pending').pipe(
+      timeout(10000),
+      retry(2),
+      map(quizzes => {
+        if (!quizzes || !Array.isArray(quizzes)) {
+          console.warn('Invalid pending quiz data format received');
+          return [];
+        }
+        
+        return quizzes.map(quiz => {
+          try {
+            return this.validateAndCleanQuiz(quiz);
+          } catch (error) {
+            console.error('Error validating pending quiz:', error);
+            return null;
+          }
+        }).filter(quiz => quiz !== null) as Quiz[];
+      }),
+      tap((quizzes) => {
+        console.log('Pending quizzes loaded successfully:', quizzes.length);
+      }),
+      catchError((error) => {
+        console.error('Error fetching pending quizzes:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Génère un quiz avec l'IA
+   */
+  generateAiQuiz(request: any): Observable<any> {
+    return this.http.post<any>('/api/admin/ai-quiz/generate', request).pipe(
+      timeout(30000), // 30 secondes timeout pour la génération IA
+      retry(1),
+      catchError((error) => {
+        console.error('Error generating AI quiz:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

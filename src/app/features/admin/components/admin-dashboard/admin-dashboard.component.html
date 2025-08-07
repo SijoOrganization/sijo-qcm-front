@@ -1,47 +1,69 @@
+<!-- Professional Admin Dashboard -->
 <div class="admin-dashboard">
   <!-- Header -->
-  <div class="admin-header">
-    <div class="container-fluid">
-      <h1 class="admin-title">
-        <i class="fas fa-cogs me-3"></i>
-        Administration Dashboard
-      </h1>
-      <nav class="admin-nav">
-        <button 
-          class="nav-btn" 
-          [class.active]="currentTab() === 'dashboard'"
-          (click)="switchTab('dashboard')"
-        >
-          <i class="fas fa-tachometer-alt"></i>
-          Dashboard
-        </button>
-        <button 
-          class="nav-btn" 
-          [class.active]="currentTab() === 'quizzes'"
-          (click)="switchTab('quizzes')"
-        >
-          <i class="fas fa-question-circle"></i>
-          Quiz Management
-        </button>
-        <button 
-          class="nav-btn" 
-          [class.active]="currentTab() === 'questions'"
-          (click)="switchTab('questions')"
-        >
-          <i class="fas fa-database"></i>
-          Question Bank
-        </button>
-        <button 
-          class="nav-btn" 
-          [class.active]="currentTab() === 'settings'"
-          (click)="switchTab('settings')"
-        >
-          <i class="fas fa-cog"></i>
-          Settings
-        </button>
-      </nav>
+  <header class="admin-header">
+    <div class="container">
+      <div class="text-center">
+        <h1 class="admin-title">
+          <i class="fas fa-shield-alt me-3"></i>
+          SIJO Admin Dashboard
+        </h1>
+        <p class="admin-subtitle">Professional Candidate Testing Platform</p>
+        
+        <!-- Professional Navigation -->
+        <nav class="admin-nav">
+          <button 
+            class="nav-btn"
+            [class.active]="currentTab() === 'dashboard'"
+            (click)="switchTab('dashboard')"
+          >
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+          </button>
+          <button 
+            class="nav-btn"
+            [class.active]="currentTab() === 'ai-generator'"
+            (click)="switchTab('ai-generator')"
+          >
+            <i class="fas fa-robot"></i>
+            AI Generator
+          </button>
+          <button 
+            class="nav-btn"
+            [class.active]="currentTab() === 'manual-creator'"
+            (click)="switchTab('manual-creator')"
+          >
+            <i class="fas fa-edit"></i>
+            Manual Creator
+          </button>
+          <button 
+            class="nav-btn"
+            [class.active]="currentTab() === 'validation'"
+            (click)="switchTab('validation')"
+          >
+            <i class="fas fa-check-circle"></i>
+            Validation Center
+          </button>
+          <button 
+            class="nav-btn"
+            [class.active]="currentTab() === 'candidates'"
+            (click)="switchTab('candidates')"
+          >
+            <i class="fas fa-users"></i>
+            Candidates
+          </button>
+          <button 
+            class="nav-btn"
+            [class.active]="currentTab() === 'analytics'"
+            (click)="switchTab('analytics')"
+          >
+            <i class="fas fa-chart-line"></i>
+            Analytics
+          </button>
+        </nav>
+      </div>
     </div>
-  </div>
+  </header>
 
   <!-- Dashboard Tab -->
   <div class="container-fluid mt-4" *ngIf="currentTab() === 'dashboard'">
@@ -61,14 +83,14 @@
       </div>
 
       <div class="col-md-3 mb-4">
-        <div class="stat-card question-stats">
+        <div class="stat-card candidate-stats">
           <div class="stat-icon">
-            <i class="fas fa-question"></i>
+            <i class="fas fa-users"></i>
           </div>
           <div class="stat-content">
-            <h3>{{ stats().totalQuestions }}</h3>
-            <p>Total Questions</p>
-            <small>{{ stats().validatedQuestions }} validated, {{ stats().pendingQuestions }} pending</small>
+            <h3>{{ stats().totalCandidates }}</h3>
+            <p>Total Candidates</p>
+            <small>{{ stats().testsThisMonth }} tests this month</small>
           </div>
         </div>
       </div>
@@ -89,64 +111,85 @@
       <div class="col-md-3 mb-4">
         <div class="stat-card validation-stats">
           <div class="stat-icon">
-            <i class="fas fa-check-circle"></i>
+            <i class="fas fa-chart-bar"></i>
           </div>
           <div class="stat-content">
-            <h3>{{ ((stats().validatedQuizzes + stats().validatedQuestions) / (stats().totalQuizzes + stats().totalQuestions) * 100) | number:'1.1-1' }}%</h3>
-            <p>Validation Rate</p>
-            <small>Content validation status</small>
+            <h3>{{ stats().averageScore }}%</h3>
+            <p>Average Score</p>
+            <small>{{ stats().completionRate }}% completion rate</small>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Quick Overview -->
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">
+              <i class="fas fa-clock me-2"></i>
+              Recent Activity
+            </h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">Recent platform activity and notifications will appear here.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              Pending Actions
+            </h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">{{ stats().pendingQuizzes }} quizzes awaiting validation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Generator Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'ai-generator'">
     <div class="row">
       <div class="col-12">
         <div class="card">
           <div class="card-header">
             <h5 class="card-title">
-              <i class="fas fa-bolt me-2"></i>
-              Quick Actions
+              <i class="fas fa-robot me-2"></i>
+              AI Quiz Generator
             </h5>
           </div>
           <div class="card-body">
-            <div class="row">
-              <div class="col-md-3">
-                <button 
-                  class="btn btn-primary btn-lg w-100 mb-3"
-                  (click)="showQuestionForm.set(true)"
-                >
-                  <i class="fas fa-plus me-2"></i>
-                  Add New Question
-                </button>
-              </div>
-              <div class="col-md-3">
-                <button 
-                  class="btn btn-success btn-lg w-100 mb-3"
-                  [routerLink]="['/quizzes/create']"
-                >
-                  <i class="fas fa-plus me-2"></i>
-                  Create New Quiz
-                </button>
-              </div>
-              <div class="col-md-3">
-                <button 
-                  class="btn btn-warning btn-lg w-100 mb-3"
-                  (click)="switchTab('quizzes')"
-                >
-                  <i class="fas fa-clock me-2"></i>
-                  Review Pending ({{ stats().pendingQuizzes }})
-                </button>
-              </div>
-              <div class="col-md-3">
-                <button 
-                  class="btn btn-info btn-lg w-100 mb-3"
-                  [routerLink]="['/quizzes/question-bank']"
-                >
-                  <i class="fas fa-database me-2"></i>
-                  Manage Question Bank
-                </button>
+            <!-- AI Generator Component -->
+            <div class="ai-generator-container">
+              <div class="row">
+                <div class="col-md-8">
+                  <h4 class="mb-4">Generate Professional Quizzes with AI</h4>
+                  <p class="mb-4">Use advanced AI to create comprehensive technical assessments tailored to specific roles and skill levels.</p>
+                  
+                  <!-- AI Generator Form -->
+                  <app-ai-quiz-generator 
+                    (quizGenerated)="onAIQuizGenerated($event)">
+                  </app-ai-quiz-generator>
+                </div>
+                <div class="col-md-4">
+                  <div class="text-center">
+                    <i class="fas fa-brain fa-4x mb-3" style="opacity: 0.3;"></i>
+                    <h6>AI Workflow</h6>
+                    <ol class="text-start" style="font-size: 0.9rem;">
+                      <li>Define job requirements</li>
+                      <li>Select difficulty level</li>
+                      <li>AI generates questions</li>
+                      <li>Review and validate</li>
+                      <li>Deploy to candidates</li>
+                    </ol>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -155,97 +198,90 @@
     </div>
   </div>
 
-  <!-- Quiz Management Tab -->
-  <div class="container-fluid mt-4" *ngIf="currentTab() === 'quizzes'">
+  <!-- Manual Creator Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'manual-creator'">
     <div class="row">
       <div class="col-12">
         <div class="card">
           <div class="card-header">
             <h5 class="card-title">
-              <i class="fas fa-question-circle me-2"></i>
-              Quiz Management
+              <i class="fas fa-edit me-2"></i>
+              Manual Quiz Creator
             </h5>
           </div>
           <div class="card-body">
-            <!-- Pending Quizzes -->
-            <div class="mb-4" *ngIf="pendingQuizzes().length > 0">
-              <h6 class="text-warning">
+            <!-- Manual Quiz Creator Component -->
+            <app-manual-quiz-creator
+              [editingQuiz]="editingQuiz()"
+              (quizCreated)="onManualQuizCreated($event)"
+              (cancelled)="onManualQuizCancelled()"
+            ></app-manual-quiz-creator>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Validation Center Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'validation'">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-check-circle me-2"></i>
+              Quiz Validation Center
+            </h5>
+            <button class="btn btn-outline-primary btn-sm" (click)="refreshQuizData()" title="Refresh data">
+              <i class="fas fa-sync-alt me-1"></i>
+              Refresh
+            </button>
+          </div>
+          <div class="card-body">
+            <!-- Pending Validation -->
+            <div class="mb-4" *ngIf="pendingQuizzes().length > 0; else noPendingQuizzes">
+              <h6 class="text-warning mb-3">
                 <i class="fas fa-clock me-2"></i>
                 Pending Validation ({{ pendingQuizzes().length }})
               </h6>
-              <div class="table-responsive">
-                <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Type</th>
-                      <th>Questions</th>
-                      <th>Difficulty</th>
-                      <th>Created</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let quiz of pendingQuizzes()">
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <i [class]="getQuizTypeIcon(quiz)" class="me-2"></i>
-                          {{ quiz.title }}
-                        </div>
-                      </td>
-                      <td>
-                        <span class="badge bg-secondary">{{ quiz.category }}</span>
-                      </td>
-                      <td>{{ quiz.questions.length || 0 }}</td>
-                      <td>
-                        <span class="badge" [class.bg-success]="quiz.difficulty === 'easy'" 
-                              [class.bg-warning]="quiz.difficulty === 'medium'"
-                              [class.bg-danger]="quiz.difficulty === 'hard'">
-                          {{ quiz.difficulty }}
-                        </span>
-                      </td>
-                      <td>{{ quiz.estimatedTime || 30 }} min</td>
-                      <td>
-                        <div class="btn-group" role="group">
-                          <button 
-                            class="btn btn-sm btn-outline-primary"
-                            (click)="previewQuiz(quiz)"
-                            title="Preview"
-                          >
-                            <i class="fas fa-eye"></i>
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-success"
-                            (click)="validateQuiz(quiz)"
-                            title="Validate"
-                          >
-                            <i class="fas fa-check"></i>
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-warning"
-                            (click)="editQuiz(quiz)"
-                            title="Edit"
-                          >
-                            <i class="fas fa-edit"></i>
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-danger"
-                            (click)="deleteQuiz(quiz)"
-                            title="Delete"
-                          >
-                            <i class="fas fa-trash"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="validation-item" *ngFor="let quiz of pendingQuizzes()">
+                <div class="row">
+                  <div class="col-md-8">
+                    <h6>{{ quiz.title }}</h6>
+                    <p class="text-muted mb-2">{{ quiz.category }} • {{ quiz.difficulty }} • {{ quiz.questions.length }} questions</p>
+                    <p class="mb-0">{{ quiz.title || 'No description available' }}</p>
+                  </div>
+                  <div class="col-md-4 text-end">
+                    <div class="validation-actions">
+                      <button class="btn btn-sm btn-primary" (click)="previewQuiz(quiz)">
+                        <i class="fas fa-eye me-1"></i>Preview
+                      </button>
+                      <button class="btn btn-sm btn-success" (click)="validateQuiz(quiz)">
+                        <i class="fas fa-check me-1"></i>Validate
+                      </button>
+                      <button class="btn btn-sm btn-warning" (click)="editQuiz(quiz)">
+                        <i class="fas fa-edit me-1"></i>Edit
+                      </button>
+                      <button class="btn btn-sm btn-danger" (click)="deleteQuiz(quiz)">
+                        <i class="fas fa-trash me-1"></i>Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
+            <ng-template #noPendingQuizzes>
+              <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <h5>All Caught Up!</h5>
+                <p>No quizzes pending validation. Great work!</p>
+              </div>
+            </ng-template>
+
             <!-- Validated Quizzes -->
-            <div class="mb-4">
-              <h6 class="text-success">
+            <div class="mb-4" *ngIf="validatedQuizzes().length > 0">
+              <h6 class="text-success mb-3">
                 <i class="fas fa-check-circle me-2"></i>
                 Validated Quizzes ({{ validatedQuizzes().length }})
               </h6>
@@ -253,10 +289,10 @@
                 <table class="table table-striped">
                   <thead>
                     <tr>
-                      <th>Title</th>
-                      <th>Type</th>
-                      <th>Questions</th>
+                      <th>Quiz Title</th>
+                      <th>Category</th>
                       <th>Difficulty</th>
+                      <th>Questions</th>
                       <th>Validated By</th>
                       <th>Actions</th>
                     </tr>
@@ -269,40 +305,27 @@
                           {{ quiz.title }}
                         </div>
                       </td>
+                      <td><span class="badge bg-secondary">{{ quiz.category }}</span></td>
                       <td>
-                        <span class="badge bg-secondary">{{ quiz.category }}</span>
-                      </td>
-                      <td>{{ quiz.questions.length || 0 }}</td>
-                      <td>
-                        <span class="badge" [class.bg-success]="quiz.difficulty === 'easy'" 
+                        <span class="badge" 
+                              [class.bg-success]="quiz.difficulty === 'easy'" 
                               [class.bg-warning]="quiz.difficulty === 'medium'"
                               [class.bg-danger]="quiz.difficulty === 'hard'">
                           {{ quiz.difficulty }}
                         </span>
                       </td>
+                      <td>{{ quiz.questions.length }}</td>
                       <td>{{ quiz.validatedBy || 'System' }}</td>
                       <td>
                         <div class="btn-group" role="group">
-                          <button 
-                            class="btn btn-sm btn-outline-primary"
-                            (click)="previewQuiz(quiz)"
-                            title="View"
-                          >
+                          <button class="btn btn-sm btn-outline-primary" (click)="previewQuiz(quiz)">
                             <i class="fas fa-eye"></i>
                           </button>
-                          <button 
-                            class="btn btn-sm btn-outline-warning"
-                            (click)="editQuiz(quiz)"
-                            title="Edit"
-                          >
+                          <button class="btn btn-sm btn-outline-warning" (click)="editQuiz(quiz)">
                             <i class="fas fa-edit"></i>
                           </button>
-                          <button 
-                            class="btn btn-sm btn-outline-danger"
-                            (click)="deleteQuiz(quiz)"
-                            title="Delete"
-                          >
-                            <i class="fas fa-trash"></i>
+                          <button class="btn btn-sm btn-outline-danger" (click)="invalidateQuiz(quiz)">
+                            <i class="fas fa-times"></i>
                           </button>
                         </div>
                       </td>
@@ -317,193 +340,188 @@
     </div>
   </div>
 
-  <!-- Question Bank Tab -->
-  <div class="container-fluid mt-4" *ngIf="currentTab() === 'questions'">
+  <!-- Candidates Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'candidates'">
     <div class="row">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-              <h5 class="card-title mb-0">
-                <i class="fas fa-database me-2"></i>
-                Question Bank Management
-              </h5>
-              <button 
-                class="btn btn-primary"
-                (click)="openQuestionForm()"
-              >
-                <i class="fas fa-plus me-2"></i>
-                Add New Question
-              </button>
-            </div>
-          </div>
-          <div class="card-body">
-            <!-- Pending Questions -->
-            <div class="mb-4" *ngIf="pendingQuestions().length > 0">
-              <h6 class="text-warning">
-                <i class="fas fa-clock me-2"></i>
-                Pending Validation ({{ pendingQuestions().length }})
-              </h6>
-              <div class="table-responsive">
-                <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Question</th>
-                      <th>Type</th>
-                      <th>Language</th>
-                      <th>Difficulty</th>
-                      <th>Tags</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let question of pendingQuestions()">
-                      <td>
-                        <div class="question-preview">
-                          {{ question.text.substring(0, 80) }}{{ question.text.length > 80 ? '...' : '' }}
-                        </div>
-                      </td>
-                      <td>
-                        <span class="badge bg-info">{{ question.type }}</span>
-                      </td>
-                      <td>{{ question.language }}</td>
-                      <td>
-                        <span class="badge" [class.bg-success]="question.difficulty === 'easy'" 
-                              [class.bg-warning]="question.difficulty === 'medium'"
-                              [class.bg-danger]="question.difficulty === 'hard'">
-                          {{ question.difficulty }}
-                        </span>
-                      </td>
-                      <td>
-                        <span 
-                          *ngFor="let tag of question.tags" 
-                          class="badge bg-secondary me-1"
-                        >
-                          {{ tag }}
-                        </span>
-                      </td>
-                      <td>
-                        <div class="btn-group" role="group">
-                          <button 
-                            class="btn btn-sm btn-outline-success"
-                            (click)="validateQuestion(question)"
-                            title="Validate"
-                          >
-                            <i class="fas fa-check"></i>
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-danger"
-                            (click)="deleteQuestion(question)"
-                            title="Delete"
-                          >
-                            <i class="fas fa-trash"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Validated Questions -->
-            <div class="mb-4">
-              <h6 class="text-success">
-                <i class="fas fa-check-circle me-2"></i>
-                Validated Questions ({{ validatedQuestions().length }})
-              </h6>
-              <div class="table-responsive">
-                <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Question</th>
-                      <th>Type</th>
-                      <th>Language</th>
-                      <th>Difficulty</th>
-                      <th>Tags</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let question of validatedQuestions()">
-                      <td>
-                        <div class="question-preview">
-                          {{ question.text.substring(0, 80) }}{{ question.text.length > 80 ? '...' : '' }}
-                        </div>
-                      </td>
-                      <td>
-                        <span class="badge bg-info">{{ question.type }}</span>
-                      </td>
-                      <td>{{ question.language }}</td>
-                      <td>
-                        <span class="badge" [class.bg-success]="question.difficulty === 'easy'" 
-                              [class.bg-warning]="question.difficulty === 'medium'"
-                              [class.bg-danger]="question.difficulty === 'hard'">
-                          {{ question.difficulty }}
-                        </span>
-                      </td>
-                      <td>
-                        <span 
-                          *ngFor="let tag of question.tags" 
-                          class="badge bg-secondary me-1"
-                        >
-                          {{ tag }}
-                        </span>
-                      </td>
-                      <td>
-                        <div class="btn-group" role="group">
-                          <button 
-                            class="btn btn-sm btn-outline-warning"
-                            title="Edit"
-                          >
-                            <i class="fas fa-edit"></i>
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-danger"
-                            (click)="deleteQuestion(question)"
-                            title="Delete"
-                          >
-                            <i class="fas fa-trash"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+      <!-- Skill Level Overview -->
+      <div class="col-md-4 mb-4">
+        <div class="skill-level-card beginner">
+          <div class="skill-level-number text-success">{{ stats().beginnerCandidates }}</div>
+          <h6>Beginner Level</h6>
+          <p class="text-muted">Entry-level candidates</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="skill-level-card intermediate">
+          <div class="skill-level-number text-warning">{{ stats().intermediateCandidates }}</div>
+          <h6>Intermediate Level</h6>
+          <p class="text-muted">Mid-level candidates</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="skill-level-card advanced">
+          <div class="skill-level-number text-danger">{{ stats().advancedCandidates }}</div>
+          <h6>Advanced Level</h6>
+          <p class="text-muted">Senior-level candidates</p>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Settings Tab -->
-  <div class="container-fluid mt-4" *ngIf="currentTab() === 'settings'">
+    <!-- Candidate Management Actions -->
     <div class="row">
       <div class="col-12">
         <div class="card">
           <div class="card-header">
             <h5 class="card-title">
-              <i class="fas fa-cog me-2"></i>
-              System Settings
+              <i class="fas fa-users me-2"></i>
+              Candidate Management
             </h5>
           </div>
           <div class="card-body">
-            <div class="alert alert-info">
-              <i class="fas fa-info-circle me-2"></i>
-              System settings will be implemented in future versions.
+            <div class="candidate-actions">
+              <button class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>
+                Add New Candidate
+              </button>
+              <button class="btn btn-success">
+                <i class="fas fa-brain me-2"></i>
+                Smart Quiz Assignment
+              </button>
+              <button class="btn btn-info">
+                <i class="fas fa-file-export me-2"></i>
+                Export Results
+              </button>
+              <button class="btn btn-warning">
+                <i class="fas fa-chart-bar me-2"></i>
+                Performance Report
+              </button>
             </div>
-            <div class="row">
-              <div class="col-md-6">
-                <h6>AI Configuration</h6>
-                <p>Configure AI quiz generation parameters, API keys, and model settings.</p>
-              </div>
-              <div class="col-md-6">
-                <h6>Validation Rules</h6>
-                <p>Set up automatic validation rules and expert reviewer assignments.</p>
+
+            <!-- Recent Candidates Table -->
+            <div class="mt-4" *ngIf="allCandidates().length > 0; else noCandidates">
+              <h6 class="mb-3">Recent Candidates</h6>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Skill Level</th>
+                      <th>Technology</th>
+                      <th>Last Score</th>
+                      <th>Tests Completed</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let candidate of allCandidates()">
+                      <td>{{ candidate.firstName }} {{ candidate.lastName }}</td>
+                      <td>{{ candidate.email }}</td>
+                      <td>
+                        <span class="badge" 
+                              [class.bg-success]="candidate.skillLevel === 'beginner'"
+                              [class.bg-warning]="candidate.skillLevel === 'intermediate'"
+                              [class.bg-danger]="candidate.skillLevel === 'advanced'">
+                          {{ candidate.skillLevel }}
+                        </span>
+                      </td>
+                      <td>{{ candidate.primaryTechnology || 'N/A' }}</td>
+                      <td>{{ candidate.lastTestScore || 'N/A' }}%</td>
+                      <td>{{ candidate.percentageScore || 0 }}%</td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <button class="btn btn-sm btn-outline-primary" (click)="viewCandidateDetails(candidate)">
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-success" (click)="assignSmartQuiz(candidate)">
+                            <i class="fas fa-brain"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
+
+            <ng-template #noCandidates>
+              <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <h5>No Candidates Yet</h5>
+                <p>Start by adding candidates to the platform.</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Tab -->
+  <div class="container-fluid mt-4" *ngIf="currentTab() === 'analytics'">
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="analytics-chart">
+          <h6 class="mb-3">
+            <i class="fas fa-chart-line me-2"></i>
+            Performance Metrics
+          </h6>
+          <div class="metric-item">
+            <span>Average Test Completion Rate</span>
+            <span class="metric-value">{{ getCompletionRate() }}%</span>
+          </div>
+          <div class="metric-item">
+            <span>Average Score</span>
+            <span class="metric-value">{{ getAverageScore() }}%</span>
+          </div>
+          <div class="metric-item">
+            <span>Candidate Growth Rate</span>
+            <span class="metric-value">+{{ getCandidateGrowthRate() }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <div class="analytics-chart">
+          <h6 class="mb-3">
+            <i class="fas fa-trophy me-2"></i>
+            Top Performing Quizzes
+          </h6>
+          <ul class="list-unstyled">
+            <li *ngFor="let quiz of getTopPerformingQuizzes()" class="mb-2">
+              <i class="fas fa-star text-warning me-2"></i>
+              {{ quiz }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="analytics-chart">
+          <h6 class="mb-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Areas for Improvement
+          </h6>
+          <ul class="list-unstyled">
+            <li *ngFor="let quiz of getPoorPerformingQuizzes()" class="mb-2">
+              <i class="fas fa-exclamation-circle text-danger me-2"></i>
+              {{ quiz }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <div class="analytics-chart">
+          <h6 class="mb-3">
+            <i class="fas fa-lightbulb me-2"></i>
+            AI Insights
+          </h6>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Based on current data, consider creating more intermediate-level quizzes to match candidate skill distribution.
           </div>
         </div>
       </div>
@@ -518,3 +536,12 @@
   (questionSaved)="onQuestionSaved($event)"
   (formClosed)="closeQuestionForm()"
 ></app-question-form>
+
+<!-- Quiz Preview Modal -->
+<app-quiz-preview-modal
+  *ngIf="showQuizPreview()"
+  [quiz]="previewingQuiz()"
+  (closed)="closeQuizPreview()"
+  (quizValidated)="onQuizValidated($event)"
+  (quizEditRequested)="onQuizEditRequested($event)"
+></app-quiz-preview-modal>

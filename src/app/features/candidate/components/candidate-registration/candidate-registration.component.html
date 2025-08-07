@@ -1,0 +1,254 @@
+<div class="min-vh-100 bg-gradient-primary">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-xl-7">
+        
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <img src="/assets/images/sijo-logo.png" alt="SIJO" class="mb-4" style="height: 60px;">
+          <h1 class="h2 text-white mb-3">🎯 Inscription Test Technique</h1>
+          <p class="lead text-white-50">
+            Remplissez ce formulaire pour accéder à votre test de compétences techniques
+          </p>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-5">
+            
+            <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+              
+              <!-- Informations personnelles -->
+              <div class="mb-4">
+                <h4 class="text-sijo-primary mb-3">
+                  👤 Informations personnelles
+                </h4>
+                
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="firstName" class="form-label">Prénom *</label>
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      [class.is-invalid]="hasFieldError('firstName')"
+                      id="firstName" 
+                      formControlName="firstName"
+                      placeholder="Votre prénom">
+                    <div class="invalid-feedback">
+                      {{ getFieldError('firstName') }}
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label for="lastName" class="form-label">Nom *</label>
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      [class.is-invalid]="hasFieldError('lastName')"
+                      id="lastName" 
+                      formControlName="lastName"
+                      placeholder="Votre nom">
+                    <div class="invalid-feedback">
+                      {{ getFieldError('lastName') }}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email *</label>
+                    <input 
+                      type="email" 
+                      class="form-control"
+                      [class.is-invalid]="hasFieldError('email')"
+                      id="email" 
+                      formControlName="email"
+                      placeholder="votre.email@example.com">
+                    <div class="invalid-feedback">
+                      {{ getFieldError('email') }}
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label for="phone" class="form-label">Téléphone *</label>
+                    <input 
+                      type="tel" 
+                      class="form-control"
+                      [class.is-invalid]="hasFieldError('phone')"
+                      id="phone" 
+                      formControlName="phone"
+                      placeholder="+33 6 12 34 56 78">
+                    <div class="invalid-feedback">
+                      {{ getFieldError('phone') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Informations professionnelles -->
+              <div class="mb-4">
+                <h4 class="text-sijo-primary mb-3">
+                  💼 Informations professionnelles
+                </h4>
+                
+                <div class="row">
+                  <div class="col-md-8 mb-3">
+                    <label for="position" class="form-label">Poste visé *</label>
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      [class.is-invalid]="hasFieldError('position')"
+                      id="position" 
+                      formControlName="position"
+                      placeholder="Ex: Développeur Full Stack, Lead Dev...">
+                    <div class="invalid-feedback">
+                      {{ getFieldError('position') }}
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 mb-3">
+                    <label for="yearsOfExperience" class="form-label">Années d'expérience *</label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      [class.is-invalid]="hasFieldError('yearsOfExperience')"
+                      id="yearsOfExperience" 
+                      formControlName="yearsOfExperience"
+                      min="0" max="50"
+                      placeholder="5">
+                    <div class="invalid-feedback">
+                      {{ getFieldError('yearsOfExperience') }}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="company" class="form-label">Entreprise actuelle</label>
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      id="company" 
+                      formControlName="company"
+                      placeholder="Nom de votre entreprise (optionnel)">
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label for="experienceLevel" class="form-label">Niveau d'expérience *</label>
+                    <select 
+                      class="form-select"
+                      [class.is-invalid]="hasFieldError('experienceLevel')"
+                      id="experienceLevel" 
+                      formControlName="experienceLevel">
+                      <option value="">Sélectionnez votre niveau</option>
+                      <option *ngFor="let level of experienceLevels" [value]="level.value">
+                        {{ level.label }}
+                      </option>
+                    </select>
+                    <div class="invalid-feedback">
+                      {{ getFieldError('experienceLevel') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Compétences techniques -->
+              <div class="mb-4">
+                <h4 class="text-sijo-primary mb-3">
+                  💻 Compétences techniques
+                </h4>
+                
+                <div class="mb-3">
+                  <label class="form-label">Langages de programmation maîtrisés *</label>
+                  <div class="row">
+                    <div class="col-md-6" *ngFor="let lang of programmingLanguages">
+                      <div class="form-check mb-2">
+                        <input 
+                          class="form-check-input" 
+                          type="checkbox" 
+                          [id]="'lang-' + lang.value"
+                          [checked]="isLanguageSelected(lang.value)"
+                          (change)="onLanguageChange(lang.value, $event)">
+                        <label class="form-check-label" [for]="'lang-' + lang.value">
+                          {{ lang.label }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-danger small" *ngIf="hasFieldError('programmingLanguages')">
+                    Sélectionnez au moins un langage
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="preferredLanguage" class="form-label">Langage principal pour le test *</label>
+                  <select 
+                    class="form-select"
+                    [class.is-invalid]="hasFieldError('preferredLanguage')"
+                    id="preferredLanguage" 
+                    formControlName="preferredLanguage">
+                    <option value="">Choisissez le langage pour votre test</option>
+                    <option *ngFor="let lang of programmingLanguages" [value]="lang.value">
+                      {{ lang.label }}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback">
+                    {{ getFieldError('preferredLanguage') }}
+                  </div>
+                  <div class="form-text">
+                    Le test sera adapté à ce langage de programmation
+                  </div>
+                </div>
+              </div>
+
+              <!-- Informations importantes -->
+              <div class="alert alert-info mb-4">
+                <h6 class="alert-heading">
+                  <i class="fas fa-info-circle me-2"></i>
+                  Informations importantes
+                </h6>
+                <ul class="mb-0 small">
+                  <li>Le test dure environ <strong>60 minutes</strong></li>
+                  <li>Vous recevrez un email avec le lien pour commencer</li>
+                  <li>Le test comprend des <strong>QCM</strong>, des <strong>exercices de code</strong> et des <strong>questions à compléter</strong></li>
+                  <li>Assurez-vous d'avoir une connexion internet stable</li>
+                  <li>Le test se fait en <strong>une seule fois</strong>, préparez-vous avant de commencer</li>
+                </ul>
+              </div>
+
+              <!-- Boutons -->
+              <div class="d-grid gap-2">
+                <button 
+                  type="submit" 
+                  class="btn btn-sijo-primary btn-lg"
+                  [disabled]="isLoading || registrationForm.invalid">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!isLoading" class="fas fa-user-plus me-2"></i>
+                  {{ isLoading ? 'Inscription en cours...' : 'S\'inscrire au test' }}
+                </button>
+                
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary"
+                  (click)="registrationForm.reset(); initializeForm()">
+                  <i class="fas fa-redo me-2"></i>
+                  Réinitialiser
+                </button>
+              </div>
+              
+            </form>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-4">
+          <p class="text-white-50 small">
+            <i class="fas fa-shield-alt me-1"></i>
+            Vos informations sont sécurisées et ne seront utilisées qu'à des fins de recrutement
+          </p>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>

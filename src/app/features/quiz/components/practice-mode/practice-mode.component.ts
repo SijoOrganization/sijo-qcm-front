@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
 import { Quiz, Question } from '../../../../shared/models/quiz.model';
+import { NewlinePipe } from '../../../../shared/pipes/newline.pipe';
 
 @Component({
   selector: 'app-practice-mode',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NewlinePipe],
   templateUrl: './practice-mode.component.html',
   styleUrl: './practice-mode.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

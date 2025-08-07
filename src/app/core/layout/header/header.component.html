@@ -17,6 +17,17 @@
         <li class="nav-item">
           <a
             class="nav-link"
+            [routerLink]="'/candidate'"
+            routerLinkActive="active"
+            (click)="isMenuCollapsed = true"
+          >
+            <i class="fas fa-user-graduate me-1"></i>
+            Espace Candidat
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
             [routerLink]="'/platform'"
             routerLinkActive="active"
             (click)="isMenuCollapsed = true"

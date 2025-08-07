@@ -1,0 +1,441 @@
+<div class="sijo-ai-generator">
+  <!-- Header avec branding SIJO -->
+  <div class="sijo-header">
+    <div class="header-content">
+      <div class="brand-section">
+        <div class="sijo-logo">
+          <span class="logo-icon">🤖</span>
+          <h1 class="brand-title">SIJO AI Quiz Generator</h1>
+        </div>
+        <p class="brand-subtitle">Générez des quiz techniques intelligents en quelques secondes</p>
+      </div>
+      
+      <div class="stats-section" *ngIf="generationStats().totalGenerated > 0">
+        <div class="stat-card">
+          <span class="stat-number">{{ generationStats().totalGenerated }}</span>
+          <span class="stat-label">Quiz générés</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">{{ (generationStats().avgGenerationTime / 1000).toFixed(1) }}s</span>
+          <span class="stat-label">Temps moyen</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation par onglets -->
+  <div class="sijo-tabs">
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab() === 'basic'"
+      (click)="setActiveTab('basic')"
+    >
+      <span class="tab-icon">⚡</span>
+      <span class="tab-label">Génération Rapide</span>
+    </button>
+    
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab() === 'advanced'"
+      (click)="setActiveTab('advanced')"
+    >
+      <span class="tab-icon">🎯</span>
+      <span class="tab-label">Configuration Avancée</span>
+    </button>
+    
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab() === 'presets'"
+      (click)="setActiveTab('presets')"
+    >
+      <span class="tab-icon">🎨</span>
+      <span class="tab-label">Presets Populaires</span>
+    </button>
+  </div>
+
+  <form [formGroup]="generatorForm" class="sijo-form">
+    
+    <!-- Onglet Génération Rapide -->
+    <div class="tab-content" *ngIf="activeTab() === 'basic'">
+      <div class="content-grid">
+        
+        <!-- Colonne principale -->
+        <div class="main-column">
+          <div class="form-card">
+            <h3 class="card-title">
+              <span class="title-icon">🚀</span>
+              Configuration de base
+            </h3>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="topic" class="sijo-label">
+                  <span class="label-icon">💡</span>
+                  Sujet technique
+                </label>
+                <input 
+                  type="text" 
+                  id="topic"
+                  class="sijo-input" 
+                  formControlName="topic"
+                  placeholder="Ex: API REST avec Spring Boot, Algorithmes de tri..."
+                  [class.error]="generatorForm.get('topic')?.touched && generatorForm.get('topic')?.invalid"
+                >
+                <div class="input-hint">Soyez précis pour obtenir des questions pertinentes</div>
+                <div class="error-message" *ngIf="generatorForm.get('topic')?.touched && generatorForm.get('topic')?.invalid">
+                  <span *ngIf="generatorForm.get('topic')?.hasError('required')">Le sujet est obligatoire</span>
+                  <span *ngIf="generatorForm.get('topic')?.hasError('minlength')">Minimum 3 caractères</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="numberOfQuestions" class="sijo-label">
+                  <span class="label-icon">🔢</span>
+                  Nombre de questions
+                </label>
+                <input 
+                  type="number" 
+                  id="numberOfQuestions"
+                  class="sijo-input" 
+                  formControlName="numberOfQuestions"
+                  min="1" 
+                  max="20"
+                >
+                <div class="input-hint">Recommandé: 5-10 questions</div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="sijo-label">
+                  <span class="label-icon">💻</span>
+                  Langage de programmation
+                </label>
+                <div class="language-grid">
+                  <div 
+                    *ngFor="let lang of languages" 
+                    class="language-card"
+                    [class.selected]="generatorForm.get('language')?.value === lang.value"
+                    (click)="generatorForm.patchValue({language: lang.value})"
+                  >
+                    <span class="lang-icon" [style.color]="lang.color">{{ lang.icon }}</span>
+                    <span class="lang-name">{{ lang.label }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="sijo-label">
+                  <span class="label-icon">📊</span>
+                  Niveau de difficulté
+                </label>
+                <div class="difficulty-grid">
+                  <div 
+                    *ngFor="let diff of difficulties" 
+                    class="difficulty-card"
+                    [class.selected]="generatorForm.get('difficulty')?.value === diff.value"
+                    (click)="generatorForm.patchValue({difficulty: diff.value})"
+                  >
+                    <div class="diff-header">
+                      <span class="diff-icon">{{ diff.icon }}</span>
+                      <span class="diff-name">{{ diff.label }}</span>
+                    </div>
+                    <p class="diff-description">{{ diff.description }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Types de questions mixtes -->
+            <div class="form-row">
+              <div class="form-group">
+                <div class="checkbox-card">
+                  <input 
+                    type="checkbox" 
+                    id="enableMixedTypes"
+                    class="sijo-checkbox"
+                    formControlName="enableMixedTypes"
+                  >
+                  <label for="enableMixedTypes" class="checkbox-label">
+                    <span class="checkbox-icon">🎯</span>
+                    <div class="checkbox-content">
+                      <span class="checkbox-title">Types de questions mixtes</span>
+                      <span class="checkbox-subtitle">QCM + Programmation + Fill-in-the-blank</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Configuration des pourcentages -->
+            <div class="percentage-config" *ngIf="generatorForm.get('enableMixedTypes')?.value">
+              <h4 class="config-title">
+                <span class="title-icon">📊</span>
+                Distribution des types de questions
+              </h4>
+              
+              <div class="percentage-sliders">
+                <div class="slider-group">
+                  <label class="slider-label">
+                    <span class="slider-icon">❓</span>
+                    QCM ({{ generatorForm.get('qcmPercentage')?.value }}%)
+                  </label>
+                  <input 
+                    type="range" 
+                    class="sijo-slider"
+                    formControlName="qcmPercentage"
+                    min="0" 
+                    max="100"
+                  >
+                </div>
+                
+                <div class="slider-group">
+                  <label class="slider-label">
+                    <span class="slider-icon">💻</span>
+                    Programmation ({{ generatorForm.get('codingPercentage')?.value }}%)
+                  </label>
+                  <input 
+                    type="range" 
+                    class="sijo-slider"
+                    formControlName="codingPercentage"
+                    min="0" 
+                    max="100"
+                  >
+                </div>
+                
+                <div class="slider-group">
+                  <label class="slider-label">
+                    <span class="slider-icon">✏️</span>
+                    Fill-in-blank ({{ generatorForm.get('fillBlankPercentage')?.value }}%)
+                  </label>
+                  <input 
+                    type="range" 
+                    class="sijo-slider"
+                    formControlName="fillBlankPercentage"
+                    min="0" 
+                    max="100"
+                  >
+                </div>
+              </div>
+              
+              <div class="percentage-total">
+                Total: {{ 
+                  (generatorForm.get('qcmPercentage')?.value || 0) + 
+                  (generatorForm.get('codingPercentage')?.value || 0) + 
+                  (generatorForm.get('fillBlankPercentage')?.value || 0) 
+                }}%
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Colonne d'aide -->
+        <div class="side-column">
+          <div class="preview-card">
+            <h4 class="card-title">
+              <span class="title-icon">👁️</span>
+              Aperçu
+            </h4>
+            
+            <div class="preview-content">
+              <div class="preview-item">
+                <span class="preview-label">Sujet</span>
+                <span class="preview-value">{{ generatorForm.get('topic')?.value || 'Non défini' }}</span>
+              </div>
+              
+              <div class="preview-item">
+                <span class="preview-label">Questions</span>
+                <span class="preview-value">{{ generatorForm.get('numberOfQuestions')?.value }}</span>
+              </div>
+              
+              <div class="preview-item">
+                <span class="preview-label">Langage</span>
+                <span class="preview-value">{{ generatorForm.get('language')?.value }}</span>
+              </div>
+              
+              <div class="preview-item">
+                <span class="preview-label">Difficulté</span>
+                <span class="preview-badge" [style.background-color]="getDifficultyColor(generatorForm.get('difficulty')?.value)">
+                  {{ generatorForm.get('difficulty')?.value }}
+                </span>
+              </div>
+              
+              <div class="preview-item" *ngIf="generatorForm.get('enableMixedTypes')?.value">
+                <span class="preview-label">Types mixtes</span>
+                <span class="preview-value">Oui</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tips-card">
+            <h4 class="card-title">
+              <span class="title-icon">💡</span>
+              Conseils SIJO
+            </h4>
+            
+            <div class="tips-list">
+              <div class="tip-item">
+                <span class="tip-icon">✨</span>
+                <span class="tip-text">Soyez spécifique dans le sujet pour des résultats optimaux</span>
+              </div>
+              
+              <div class="tip-item">
+                <span class="tip-icon">⚡</span>
+                <span class="tip-text">5-10 questions permettent une évaluation complète</span>
+              </div>
+              
+              <div class="tip-item">
+                <span class="tip-icon">🎯</span>
+                <span class="tip-text">Les types mixtes offrent une évaluation plus précise</span>
+              </div>
+              
+              <div class="tip-item">
+                <span class="tip-icon">🚀</span>
+                <span class="tip-text">Adaptez la difficulté au niveau du poste visé</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Configuration Avancée -->
+    <div class="tab-content" *ngIf="activeTab() === 'advanced'">
+      <div class="content-grid">
+        <div class="main-column">
+          <div class="form-card">
+            <h3 class="card-title">
+              <span class="title-icon">🎯</span>
+              Configuration avancée
+            </h3>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="category" class="sijo-label">
+                  <span class="label-icon">📁</span>
+                  Catégorie technique
+                </label>
+                <select id="category" class="sijo-select" formControlName="category">
+                  <option *ngFor="let cat of categories" [value]="cat.value">
+                    {{ cat.icon }} {{ cat.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <div class="checkbox-card">
+                  <input 
+                    type="checkbox" 
+                    id="includeCoding"
+                    class="sijo-checkbox"
+                    formControlName="includeCoding"
+                  >
+                  <label for="includeCoding" class="checkbox-label">
+                    <span class="checkbox-icon">💻</span>
+                    <div class="checkbox-content">
+                      <span class="checkbox-title">Inclure des exercices de programmation</span>
+                      <span class="checkbox-subtitle">Ajoute des questions de code pratique avec tests</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Presets -->
+    <div class="tab-content" *ngIf="activeTab() === 'presets'">
+      <div class="presets-grid">
+        <div 
+          *ngFor="let preset of popularPresets" 
+          class="preset-card"
+          (click)="applyPreset(preset)"
+        >
+          <div class="preset-header">
+            <h4 class="preset-name">{{ preset.name }}</h4>
+            <span class="preset-badge">{{ preset.language }}</span>
+          </div>
+          
+          <p class="preset-topic">{{ preset.topic }}</p>
+          
+          <div class="preset-details">
+            <div class="preset-detail">
+              <span class="detail-icon">🔢</span>
+              <span class="detail-text">{{ preset.numberOfQuestions }} questions</span>
+            </div>
+            
+            <div class="preset-detail">
+              <span class="detail-icon">📊</span>
+              <span class="detail-text">{{ preset.difficulty | titlecase }}</span>
+            </div>
+            
+            <div class="preset-detail" *ngIf="preset.includeCoding">
+              <span class="detail-icon">💻</span>
+              <span class="detail-text">Avec programmation</span>
+            </div>
+          </div>
+          
+          <div class="preset-apply">
+            <span class="apply-text">Cliquer pour appliquer</span>
+            <span class="apply-icon">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions globales -->
+    <div class="action-section">
+      <div class="action-buttons">
+        <button 
+          type="button"
+          class="sijo-btn primary large"
+          [disabled]="!generatorForm.valid || isGenerating()"
+          (click)="generateQuickQuiz()"
+        >
+          <span class="btn-icon" *ngIf="!isGenerating()">🚀</span>
+          <span class="btn-icon rotating" *ngIf="isGenerating()">⚡</span>
+          <span class="btn-text">
+            {{ isGenerating() ? 'Génération en cours...' : 'Générer le Quiz' }}
+          </span>
+        </button>
+
+        <button 
+          type="button"
+          class="sijo-btn secondary"
+          [disabled]="!generatorForm.valid || isGenerating()"
+          (click)="generateAdvancedQuiz()"
+        >
+          <span class="btn-icon">🎯</span>
+          <span class="btn-text">Génération Avancée</span>
+        </button>
+
+        <button 
+          type="button"
+          class="sijo-btn outline"
+          [disabled]="isGenerating()"
+          (click)="testAiConnection()"
+        >
+          <span class="btn-icon">🔌</span>
+          <span class="btn-text">Tester IA</span>
+        </button>
+      </div>
+
+      <!-- Erreurs de validation -->
+      <div class="validation-errors" *ngIf="formErrors.length > 0">
+        <div class="error-header">
+          <span class="error-icon">⚠️</span>
+          <span class="error-title">Veuillez corriger :</span>
+        </div>
+        <ul class="error-list">
+          <li *ngFor="let error of formErrors" class="error-item">{{ error }}</li>
+        </ul>
+      </div>
+    </div>
+  </form>
+</div>
